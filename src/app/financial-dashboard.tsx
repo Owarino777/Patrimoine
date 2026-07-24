@@ -61,7 +61,6 @@ const defaultSettings: DashboardSettings = {
 
 const banknotes = [500, 200, 100, 50, 20, 10, 5] as const;
 const coins = [2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01] as const;
-const denominations = [...banknotes, ...coins] as const;
 
 function subscribe(onStoreChange: () => void): () => void {
   window.addEventListener("storage", onStoreChange);
@@ -151,12 +150,16 @@ export function FinancialDashboard() {
       .sort((a, b) => b.amount - a.amount);
   }, [accounts, cashTotal, netWorth]);
 
-  const projection = futureValue(netWorth, monthlyContribution, settings.expectedReturnPercent, settings.horizonYears);
+  const projection = accounts.reduce((total, account) => {
+    const annualReturnPercent = account.annualReturnPercent ?? settings.expectedReturnPercent;
+    return total + futureValue(account.amount, account.monthlyContribution, annualReturnPercent, settings.horizonYears);
+  }, 0);
+
   const tasks = [
     accounts.length === 0 ? "Ajouter ton premier compte pour commencer le suivi." : null,
     savingsBalance < settings.emergencyTarget ? `Compléter l’épargne de sécurité : ${euro.format(Math.max(0, settings.emergencyTarget - savingsBalance))} restant.` : null,
     monthlyContribution === 0 ? "Renseigner les versements mensuels pour obtenir une projection fiable." : null,
-    cashTotal === 0 ? "Renseigner les billets et pièces conservés chez toi." : null,
+    cashTotal === 0 ? "Renseigner tes billets et pièces." : null,
   ].filter((task): task is string => task !== null);
 
   function saveSettings(next: DashboardSettings): void {
@@ -214,7 +217,7 @@ export function FinancialDashboard() {
             <div className="form-grid dashboard-settings-grid">
               <label className="form-field"><span>Objectif épargne de sécurité</span><input type="number" min="0" step="100" value={settings.emergencyTarget} onChange={(event) => saveSettings({ ...settings, emergencyTarget: Number(event.target.value) || 0 })} /></label>
               <label className="form-field"><span>Horizon d’investissement</span><input type="number" min="1" max="60" value={settings.horizonYears} onChange={(event) => saveSettings({ ...settings, horizonYears: Math.max(1, Number(event.target.value) || 1) })} /></label>
-              <label className="form-field"><span>Rendement annuel estimé (%)</span><input type="number" min="0" max="20" step="0.1" value={settings.expectedReturnPercent} onChange={(event) => saveSettings({ ...settings, expectedReturnPercent: Math.max(0, Number(event.target.value) || 0) })} /></label>
+              <label className="form-field"><span>Rendement annuel par défaut (%)</span><input type="number" min="0" max="20" step="0.1" value={settings.expectedReturnPercent} onChange={(event) => saveSettings({ ...settings, expectedReturnPercent: Math.max(0, Number(event.target.value) || 0) })} /></label>
             </div>
           </section>
         ) : null}
@@ -228,12 +231,12 @@ export function FinancialDashboard() {
           <div className="cash-action-icon" aria-hidden="true"><Banknote size={36} strokeWidth={1.8} /></div>
           <div className="cash-action-copy">
             <p className="eyebrow">Compte espèces</p>
-            <h2 id="cash-action-title">Billets et pièces détenus chez toi</h2>
+            <h2 id="cash-action-title">Mes billets et pièces</h2>
             <p>Indique combien tu possèdes de chaque coupure. Le total sera ajouté automatiquement à ton patrimoine général.</p>
           </div>
           <div className="cash-action-summary" aria-label={`Total espèces ${preciseEuro.format(cashTotal)}`}>
             <strong>{preciseEuro.format(cashTotal)}</strong>
-            <span>{cashTotal > 0 ? "déjà inclus dans le patrimoine" : "aucune espèce renseignée"}</span>
+            <span>{cashTotal > 0 ? "inclus dans le patrimoine, hors projection" : "aucune espèce renseignée"}</span>
           </div>
           <button className="cash-primary-button" type="button" onClick={() => setCashOpen((open) => !open)} aria-expanded={cashOpen} aria-controls="cash-counter">
             {cashOpen ? "Masquer le compteur" : "Ajouter mes billets et pièces"}
@@ -243,7 +246,7 @@ export function FinancialDashboard() {
         {cashOpen ? (
           <section id="cash-counter" className="section-card cash-counter-card" aria-labelledby="cash-title">
             <div className="section-heading cash-counter-heading">
-              <div><p className="eyebrow">Inventaire d’espèces</p><h2 id="cash-title">Compteur de billets et pièces</h2></div>
+              <div><p className="eyebrow">Espèces</p><h2 id="cash-title">Compteur de billets et pièces</h2></div>
               <div className="cash-counter-totals">
                 <span><Banknote aria-hidden="true" size={18} />Billets <strong>{preciseEuro.format(banknotesTotal)}</strong></span>
                 <span><Coins aria-hidden="true" size={18} />Pièces <strong>{preciseEuro.format(coinsTotal)}</strong></span>
@@ -282,7 +285,7 @@ export function FinancialDashboard() {
         <section className="metrics-grid" aria-label="Indicateurs principaux">
           <article className="metric-card metric-with-icon"><span className="metric-icon"><Landmark aria-hidden="true" size={22} /></span><div><span className="eyebrow">Comptes</span><strong>{accounts.length}</strong><p>{accounts.length === 0 ? "Aucun compte renseigné" : "enveloppes suivies"}</p></div></article>
           <article className="metric-card metric-with-icon"><span className="metric-icon"><PiggyBank aria-hidden="true" size={22} /></span><div><span className="eyebrow">Épargne de sécurité</span><strong>{goalPercent} %</strong><p>{euro.format(savingsBalance)} sur {euro.format(settings.emergencyTarget)}</p></div></article>
-          <article className="metric-card metric-with-icon"><span className="metric-icon metric-icon-cash"><Banknote aria-hidden="true" size={22} /></span><div><span className="eyebrow">Espèces incluses</span><strong>{preciseEuro.format(cashTotal)}</strong><p>Billets {preciseEuro.format(banknotesTotal)} · Pièces {preciseEuro.format(coinsTotal)}</p></div></article>
+          <article className="metric-card metric-with-icon"><span className="metric-icon metric-icon-cash"><Banknote aria-hidden="true" size={22} /></span><div><span className="eyebrow">Espèces</span><strong>{preciseEuro.format(cashTotal)}</strong><p>Vacances · hors projection long terme</p></div></article>
         </section>
 
         <section id="accounts" aria-labelledby="accounts-title" className="section-card">
@@ -296,7 +299,7 @@ export function FinancialDashboard() {
                   <div className="account-card-header"><span className="account-icon" aria-hidden="true"><WalletCards size={18} /></span><span className="status-pill status-active">Actif</span></div>
                   <h3>{account.name}</h3>
                   <p>{account.institutionName || normaliseType(account)}</p>
-                  <dl><div><dt>Valeur</dt><dd>{euro.format(account.amount)}</dd></div><div><dt>Mensuel</dt><dd>{euro.format(account.monthlyContribution)}</dd></div></dl>
+                  <dl><div><dt>Valeur</dt><dd>{euro.format(account.amount)}</dd></div><div><dt>Mensuel</dt><dd>{euro.format(account.monthlyContribution)}</dd></div><div><dt>Rendement</dt><dd>{account.annualReturnPercent ?? settings.expectedReturnPercent} %</dd></div></dl>
                 </Link>
               ))}
             </div>
@@ -325,8 +328,8 @@ export function FinancialDashboard() {
         </div>
 
         <section id="projection" aria-labelledby="projection-title" className="section-card projection-card">
-          <div><p className="eyebrow">Projection indicative</p><h2 id="projection-title">Dans {settings.horizonYears} ans</h2><p className="muted-copy">Avec {euro.format(monthlyContribution)} par mois et une hypothèse de {settings.expectedReturnPercent} % par an.</p></div>
-          <div className="projection-value"><strong>{compactEuro.format(projection)}</strong><span>capital estimé</span></div>
+          <div><p className="eyebrow">Projection des comptes investis</p><h2 id="projection-title">Dans {settings.horizonYears} ans</h2><p className="muted-copy">Calculée avec le rendement propre à chaque compte. Les espèces prévues pour les vacances sont exclues.</p></div>
+          <div className="projection-value"><strong>{compactEuro.format(projection)}</strong><span>capital estimé hors espèces</span></div>
         </section>
 
         <section id="actions" aria-labelledby="actions-title" className="section-card">
