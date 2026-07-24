@@ -15,7 +15,7 @@ const LOCAL_EVENT = "patrimoine:dashboard-changed";
 const euro = new Intl.NumberFormat("fr-FR", {
   style: "currency",
   currency: "EUR",
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const compactEuro = new Intl.NumberFormat("fr-FR", {
@@ -28,7 +28,6 @@ const compactEuro = new Intl.NumberFormat("fr-FR", {
 type DashboardSettings = Readonly<{
   emergencyTarget: number;
   horizonYears: number;
-  expectedReturnPercent: number;
 }>;
 
 type CashCounts = Record<string, number>;
@@ -36,10 +35,11 @@ type CashCounts = Record<string, number>;
 const defaultSettings: DashboardSettings = {
   emergencyTarget: 5000,
   horizonYears: 30,
-  expectedReturnPercent: 6,
 };
 
 const denominations = [500, 200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01] as const;
+const notes = denominations.filter((value) => value >= 5);
+const coins = denominations.filter((value) => value < 5);
 
 function subscribe(onStoreChange: () => void): () => void {
   window.addEventListener("storage", onStoreChange);
@@ -100,9 +100,15 @@ export function FinancialDashboard() {
   const settings = useMemo(() => ({ ...defaultSettings, ...safeParse<Partial<DashboardSettings>>(parsed.settings, {}) }), [parsed.settings]);
   const cashCounts = useMemo(() => safeParse<CashCounts>(parsed.cash, {}), [parsed.cash]);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [cashOpen, setCashOpen] = useState(false);
+  const [cashOpen, setCashOpen] = useState(true);
 
-  const cashTotal = denominations.reduce((sum, denomination) => sum + denomination * (cashCounts[String(denomination)] ?? 0), 0);
+  const denominationTotal = (values: readonly number[]) => values.reduce(
+    (sum, denomination) => sum + denomination * (cashCounts[String(denomination)] ?? 0),
+    0,
+  );
+  const notesTotal = denominationTotal(notes);
+  const coinsTotal = denominationTotal(coins);
+  const cashTotal = notesTotal + coinsTotal;
   const accountTotal = accounts.reduce((sum, account) => sum + account.amount, 0);
   const netWorth = accountTotal + cashTotal;
   const monthlyContribution = accounts.reduce((sum, account) => sum + account.monthlyContribution, 0);
@@ -123,7 +129,16 @@ export function FinancialDashboard() {
       .sort((a, b) => b.amount - a.amount);
   }, [accounts, cashTotal, netWorth]);
 
-  const projection = futureValue(netWorth, monthlyContribution, settings.expectedReturnPercent, settings.horizonYears);
+  const projection = accounts.reduce(
+    (sum, account) => sum + futureValue(
+      account.amount,
+      account.monthlyContribution,
+      account.annualReturnPercent ?? 0,
+      settings.horizonYears,
+    ),
+    cashTotal,
+  );
+
   const tasks = [
     accounts.length === 0 ? "Ajouter ton premier compte pour commencer le suivi." : null,
     savingsBalance < settings.emergencyTarget ? `Compléter l’épargne de sécurité : ${euro.format(Math.max(0, settings.emergencyTarget - savingsBalance))} restant.` : null,
@@ -152,6 +167,7 @@ export function FinancialDashboard() {
         <nav>
           <ul className="nav-list">
             <li><a aria-current="page" href="#overview">Vue d’ensemble</a></li>
+            <li><a className="cash-nav-link" href="#cash-account">💶 Compte espèces</a></li>
             <li><a href="#accounts">Comptes</a></li>
             <li><a href="#allocation">Répartition</a></li>
             <li><a href="#projection">Projection</a></li>
@@ -168,6 +184,7 @@ export function FinancialDashboard() {
         <header className="topbar">
           <div><p className="eyebrow">Tableau de bord</p><h1>Mes finances</h1></div>
           <div className="topbar-actions">
+            <a className="cash-quick-button" href="#cash-account">💶 Compter mes espèces</a>
             <button className="secondary-link" type="button" onClick={() => setSettingsOpen((open) => !open)} aria-expanded={settingsOpen} aria-controls="dashboard-settings">Réglages</button>
             <Link className="primary-button" href="/accounts/new">Ajouter un compte</Link>
           </div>
@@ -179,36 +196,54 @@ export function FinancialDashboard() {
             <div className="form-grid dashboard-settings-grid">
               <label className="form-field"><span>Objectif épargne de sécurité</span><input type="number" min="0" step="100" value={settings.emergencyTarget} onChange={(event) => saveSettings({ ...settings, emergencyTarget: Number(event.target.value) || 0 })} /></label>
               <label className="form-field"><span>Horizon d’investissement</span><input type="number" min="1" max="60" value={settings.horizonYears} onChange={(event) => saveSettings({ ...settings, horizonYears: Math.max(1, Number(event.target.value) || 1) })} /></label>
-              <label className="form-field"><span>Rendement annuel estimé (%)</span><input type="number" min="0" max="20" step="0.1" value={settings.expectedReturnPercent} onChange={(event) => saveSettings({ ...settings, expectedReturnPercent: Math.max(0, Number(event.target.value) || 0) })} /></label>
             </div>
           </section>
         ) : null}
 
         <section id="overview" aria-labelledby="overview-title" className="hero-card finance-hero">
-          <div><p className="eyebrow">Patrimoine net suivi</p><h2 id="overview-title">{euro.format(netWorth)}</h2><p className="hero-copy">Comptes et espèces réunis dans une vue unique.</p></div>
+          <div><p className="eyebrow">Patrimoine net suivi</p><h2 id="overview-title">{euro.format(netWorth)}</h2><p className="hero-copy">{euro.format(accountTotal)} sur les comptes + {euro.format(cashTotal)} en espèces.</p></div>
           <div className="hero-stat"><strong>{euro.format(monthlyContribution)}</strong><span>épargnés ou investis chaque mois</span></div>
         </section>
 
-        <section className="metrics-grid" aria-label="Indicateurs principaux">
-          <article className="metric-card"><span className="eyebrow">Comptes</span><strong>{accounts.length}</strong><p>{accounts.length === 0 ? "Aucun compte renseigné" : "enveloppes suivies"}</p></article>
-          <article className="metric-card"><span className="eyebrow">Épargne de sécurité</span><strong>{goalPercent} %</strong><p>{euro.format(savingsBalance)} sur {euro.format(settings.emergencyTarget)}</p></article>
-          <article className="metric-card"><span className="eyebrow">Espèces</span><strong>{euro.format(cashTotal)}</strong><button className="text-button" type="button" onClick={() => setCashOpen((open) => !open)} aria-expanded={cashOpen} aria-controls="cash-counter">{cashOpen ? "Fermer le compteur" : "Compter billets et pièces"}</button></article>
+        <section id="cash-account" className="cash-spotlight" aria-labelledby="cash-spotlight-title">
+          <div className="cash-spotlight-main">
+            <div className="cash-icon" aria-hidden="true">💶</div>
+            <div>
+              <p className="eyebrow">Compte dédié</p>
+              <h2 id="cash-spotlight-title">Mes espèces</h2>
+              <p>Renseigne le nombre de billets et de pièces. Le total est ajouté automatiquement au patrimoine général.</p>
+            </div>
+          </div>
+          <div className="cash-spotlight-totals" aria-label="Résumé des espèces">
+            <div><span>Billets</span><strong>{euro.format(notesTotal)}</strong></div>
+            <div><span>Pièces</span><strong>{euro.format(coinsTotal)}</strong></div>
+            <div className="cash-grand-total"><span>Total espèces</span><strong>{euro.format(cashTotal)}</strong></div>
+          </div>
+          <button className="cash-main-button" type="button" onClick={() => setCashOpen((open) => !open)} aria-expanded={cashOpen} aria-controls="cash-counter">
+            {cashOpen ? "Masquer le compteur" : "Ouvrir le compteur billets et pièces"}
+          </button>
         </section>
 
         {cashOpen ? (
-          <section id="cash-counter" className="section-card" aria-labelledby="cash-title">
-            <div className="section-heading"><div><p className="eyebrow">Espèces</p><h2 id="cash-title">Compteur de billets et pièces</h2></div><strong className="cash-total">{euro.format(cashTotal)}</strong></div>
+          <section id="cash-counter" className="section-card cash-counter-panel" aria-labelledby="cash-title">
+            <div className="section-heading"><div><p className="eyebrow">Saisie détaillée</p><h2 id="cash-title">Compteur de billets et pièces</h2></div><strong className="cash-total">{euro.format(cashTotal)}</strong></div>
             <div className="cash-grid">
               {denominations.map((denomination) => (
                 <label className="cash-field" key={denomination}>
                   <span>{denomination >= 1 ? `${denomination} €` : `${Math.round(denomination * 100)} c`}</span>
-                  <input type="number" inputMode="numeric" min="0" step="1" value={cashCounts[String(denomination)] ?? 0} onChange={(event) => updateCash(denomination, Number(event.target.value) || 0)} />
+                  <input aria-label={`Nombre de ${denomination >= 1 ? `${denomination} euros` : `${Math.round(denomination * 100)} centimes`}`} type="number" inputMode="numeric" min="0" step="1" value={cashCounts[String(denomination)] ?? 0} onChange={(event) => updateCash(denomination, Number(event.target.value) || 0)} />
                   <strong>{euro.format(denomination * (cashCounts[String(denomination)] ?? 0))}</strong>
                 </label>
               ))}
             </div>
           </section>
         ) : null}
+
+        <section className="metrics-grid" aria-label="Indicateurs principaux">
+          <article className="metric-card"><span className="eyebrow">Comptes</span><strong>{accounts.length}</strong><p>{accounts.length === 0 ? "Aucun compte renseigné" : "enveloppes suivies"}</p></article>
+          <article className="metric-card"><span className="eyebrow">Épargne de sécurité</span><strong>{goalPercent} %</strong><p>{euro.format(savingsBalance)} sur {euro.format(settings.emergencyTarget)}</p></article>
+          <article className="metric-card cash-metric-card"><span className="eyebrow">Espèces incluses</span><strong>{euro.format(cashTotal)}</strong><p>Déjà ajoutées au total général</p></article>
+        </section>
 
         <section id="accounts" aria-labelledby="accounts-title" className="section-card">
           <div className="section-heading"><div><p className="eyebrow">Comptes</p><h2 id="accounts-title">Mes enveloppes</h2></div><Link className="secondary-link" href="/accounts/new">Ajouter</Link></div>
@@ -221,7 +256,11 @@ export function FinancialDashboard() {
                   <div className="account-card-header"><span className="account-icon" aria-hidden="true">{account.name.slice(0, 1)}</span><span className="status-pill status-active">Actif</span></div>
                   <h3>{account.name}</h3>
                   <p>{account.institutionName || normaliseType(account)}</p>
-                  <dl><div><dt>Valeur</dt><dd>{euro.format(account.amount)}</dd></div><div><dt>Mensuel</dt><dd>{euro.format(account.monthlyContribution)}</dd></div></dl>
+                  <dl>
+                    <div><dt>Valeur</dt><dd>{euro.format(account.amount)}</dd></div>
+                    <div><dt>Mensuel</dt><dd>{euro.format(account.monthlyContribution)}</dd></div>
+                    <div><dt>Rendement</dt><dd>{account.annualReturnPercent ?? 0} % / an</dd></div>
+                  </dl>
                 </Link>
               ))}
             </div>
@@ -250,7 +289,7 @@ export function FinancialDashboard() {
         </div>
 
         <section id="projection" aria-labelledby="projection-title" className="section-card projection-card">
-          <div><p className="eyebrow">Projection indicative</p><h2 id="projection-title">Dans {settings.horizonYears} ans</h2><p className="muted-copy">Avec {euro.format(monthlyContribution)} par mois et une hypothèse de {settings.expectedReturnPercent} % par an.</p></div>
+          <div><p className="eyebrow">Projection indicative</p><h2 id="projection-title">Dans {settings.horizonYears} ans</h2><p className="muted-copy">Chaque compte utilise son propre rendement annuel. Les espèces restent à 0 %.</p></div>
           <div className="projection-value"><strong>{compactEuro.format(projection)}</strong><span>capital estimé</span></div>
         </section>
 
