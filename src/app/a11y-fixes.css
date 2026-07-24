@@ -1,0 +1,56 @@
+.sidebar-note .eyebrow {
+  color: #b9d7ca;
+}
+
+.account-card dt {
+  color: #4f625a;
+}
+
+.danger-button {
+  min-height: 2.75rem;
+  border: 1px solid #8f1d1d;
+  border-radius: 0.8rem;
+  padding: 0.75rem 1rem;
+  background: #b42323;
+  color: #fff;
+  font-weight: 800;
+}
+
+.danger-button:hover {
+  background: #8f1d1d;
+}
+
+.delete-confirmation {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid #d7a8a8;
+  border-radius: 0.9rem;
+  background: #fff4f4;
+}
+
+.delete-confirmation p {
+  margin: 0;
+  color: #651717;
+  font-weight: 750;
+}
+
+.delete-confirmation > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-actions-between {
+  justify-content: space-between;
+}
+
+@media (max-width: 38rem) {
+  .delete-confirmation > div {
+    display: grid;
+  }
+
+  .delete-confirmation button {
+    width: 100%;
+  }
+}
