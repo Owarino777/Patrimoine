@@ -17,6 +17,7 @@
     "verify": "npm run openapi:lint && npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
+    "lucide-react": "^0.468.0",
     "next": "16.2.11",
     "react": "19.2.7",
     "react-dom": "19.2.7",
