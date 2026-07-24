@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { dashboardAccounts, monthlyPlan, nextActions } from "./dashboard-demo";
+import { monthlyPlan, nextActions } from "./dashboard-demo";
+import { DemoAccountGrid } from "./demo-account-grid";
 
 const euro = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -9,7 +10,6 @@ const euro = new Intl.NumberFormat("fr-FR", {
 
 export default function HomePage() {
   const monthlyTotal = monthlyPlan.reduce((total, item) => total + item.amount, 0);
-  const patrimoineMonthly = dashboardAccounts.reduce((total, account) => total + account.monthlyContribution, 0);
 
   return (
     <div className="app-shell">
@@ -30,7 +30,7 @@ export default function HomePage() {
 
         <div className="sidebar-note">
           <span className="eyebrow">Démonstration</span>
-          <p>Aucune donnée réelle connectée.</p>
+          <p>Données enregistrées uniquement sur cet appareil.</p>
         </div>
       </aside>
 
@@ -46,109 +46,52 @@ export default function HomePage() {
         <section id="overview" aria-labelledby="overview-title" className="hero-card">
           <div>
             <p className="eyebrow">Total suivi</p>
-            <h2 id="overview-title">0 €</h2>
+            <h2 id="overview-title">Mode local</h2>
           </div>
-          <div className="hero-stat" aria-label={`${patrimoineMonthly} euros prévus chaque mois pour le patrimoine`}>
-            <strong>{euro.format(patrimoineMonthly)}</strong>
+          <div className="hero-stat">
+            <strong>100 €</strong>
             <span>investis par mois</span>
           </div>
         </section>
 
         <section className="metrics-grid" aria-label="Indicateurs principaux">
-          <article className="metric-card">
-            <span className="eyebrow">Budget mensuel</span>
-            <strong>{euro.format(monthlyTotal)}</strong>
-          </article>
-          <article className="metric-card">
-            <span className="eyebrow">Épargne de sécurité</span>
-            <strong>0 / 5 000 €</strong>
-          </article>
-          <article className="metric-card">
-            <span className="eyebrow">Horizon</span>
-            <strong>30 ans</strong>
-          </article>
+          <article className="metric-card"><span className="eyebrow">Budget mensuel</span><strong>{euro.format(monthlyTotal)}</strong></article>
+          <article className="metric-card"><span className="eyebrow">Épargne de sécurité</span><strong>0 / 5 000 €</strong></article>
+          <article className="metric-card"><span className="eyebrow">Horizon</span><strong>30 ans</strong></article>
         </section>
 
         <section id="accounts" aria-labelledby="accounts-title" className="section-card">
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">Comptes</p>
-              <h2 id="accounts-title">Mes enveloppes</h2>
-            </div>
-            <span className="demo-badge">Démo</span>
+            <div><p className="eyebrow">Comptes</p><h2 id="accounts-title">Mes enveloppes</h2></div>
+            <span className="demo-badge">Local</span>
           </div>
-
-          <div className="account-grid">
-            {dashboardAccounts.map((account) => (
-              <article className="account-card" key={account.id}>
-                <div className="account-card-header">
-                  <span className="account-icon" aria-hidden="true">{account.name.slice(0, 1)}</span>
-                  <span className={`status-pill status-${account.status}`}>
-                    {account.status === "active" ? "Actif" : "À configurer"}
-                  </span>
-                </div>
-                <h3>{account.name}</h3>
-                <dl>
-                  <div><dt>Valeur</dt><dd>{euro.format(account.amount)}</dd></div>
-                  <div><dt>Mensuel</dt><dd>{euro.format(account.monthlyContribution)}</dd></div>
-                </dl>
-              </article>
-            ))}
-          </div>
+          <DemoAccountGrid />
         </section>
 
         <div className="two-column-grid">
           <section id="allocation" aria-labelledby="allocation-title" className="section-card">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">Répartition</p>
-                <h2 id="allocation-title">200 € / mois</h2>
-              </div>
-            </div>
-
+            <div className="section-heading"><div><p className="eyebrow">Répartition</p><h2 id="allocation-title">200 € / mois</h2></div></div>
             <div className="allocation-bar" role="img" aria-label="50 pour cent vacances, 25 pour cent Livret A, 25 pour cent PEA">
               <span className="allocation-segment segment-vacances" style={{ width: "50%" }} />
               <span className="allocation-segment segment-livret" style={{ width: "25%" }} />
               <span className="allocation-segment segment-pea" style={{ width: "25%" }} />
             </div>
-
             <ul className="legend-list">
-              {monthlyPlan.map((item) => (
-                <li key={item.label}>
-                  <span><span className={`legend-dot legend-${item.label.toLowerCase().replace(" ", "-")}`} aria-hidden="true" />{item.label}</span>
-                  <strong>{euro.format(item.amount)}</strong>
-                </li>
-              ))}
+              {monthlyPlan.map((item) => <li key={item.label}><span><span className={`legend-dot legend-${item.label.toLowerCase().replace(" ", "-")}`} aria-hidden="true" />{item.label}</span><strong>{euro.format(item.amount)}</strong></li>)}
             </ul>
           </section>
 
           <section aria-labelledby="goal-title" className="section-card">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">Objectif</p>
-                <h2 id="goal-title">Livret A</h2>
-              </div>
-            </div>
+            <div className="section-heading"><div><p className="eyebrow">Objectif</p><h2 id="goal-title">Livret A</h2></div></div>
             <div className="goal-amount"><strong>0 €</strong><span>/ 5 000 €</span></div>
             <progress value="0" max="5000">0 %</progress>
           </section>
         </div>
 
         <section id="actions" aria-labelledby="actions-title" className="section-card">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Priorités</p>
-              <h2 id="actions-title">À faire</h2>
-            </div>
-          </div>
+          <div className="section-heading"><div><p className="eyebrow">Priorités</p><h2 id="actions-title">À faire</h2></div></div>
           <ol className="action-list">
-            {nextActions.slice(0, 3).map((action, index) => (
-              <li key={action}>
-                <span aria-hidden="true">{index + 1}</span>
-                <p>{action}</p>
-                {index < 2 ? <Link href="/accounts/new">Ouvrir</Link> : <button type="button">Ouvrir</button>}
-              </li>
-            ))}
+            {nextActions.slice(0, 3).map((action, index) => <li key={action}><span aria-hidden="true">{index + 1}</span><p>{action}</p>{index < 2 ? <Link href="/accounts/new">Ouvrir</Link> : <button type="button">Ouvrir</button>}</li>)}
           </ol>
         </section>
       </main>

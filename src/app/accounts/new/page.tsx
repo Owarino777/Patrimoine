@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { accountTypes } from "../../../domain/account/financial-account";
+import { saveDemoAccount } from "../../demo-account-storage";
 
 const accountLabels: Record<(typeof accountTypes)[number], string> = {
   LIVRET_A: "Livret A",
@@ -13,68 +18,86 @@ const accountLabels: Record<(typeof accountTypes)[number], string> = {
 };
 
 export default function NewAccountPage() {
+  const router = useRouter();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const name = String(form.get("name") ?? "").trim();
+    const institutionName = String(form.get("institutionName") ?? "").trim();
+    const accountType = String(form.get("accountType") ?? "OTHER");
+    const amount = Number(form.get("cashBalance") ?? 0);
+    const monthlyContribution = Number(form.get("monthlyContribution") ?? 0);
+
+    if (!name || !institutionName || !Number.isFinite(amount) || !Number.isFinite(monthlyContribution) || amount < 0 || monthlyContribution < 0) {
+      return;
+    }
+
+    saveDemoAccount({
+      id: crypto.randomUUID(),
+      name,
+      institutionName,
+      accountType,
+      amount,
+      monthlyContribution,
+    });
+
+    router.push("/#accounts");
+  }
+
   return (
     <main id="main-content" className="form-page" tabIndex={-1}>
       <div className="form-page-header">
         <div>
-          <p className="eyebrow">Mise en route</p>
-          <h1>Ajouter un compte patrimonial</h1>
-          <p className="form-intro">
-            Renseigne uniquement les informations utiles au suivi. Aucune connexion bancaire ni aucun ordre financier ne sera effectué.
-          </p>
+          <p className="eyebrow">Compte</p>
+          <h1>Ajouter un compte</h1>
         </div>
-        <Link className="secondary-link" href="/">Retour au tableau de bord</Link>
+        <Link className="secondary-link" href="/">Retour</Link>
       </div>
 
-      <form className="account-form">
+      <form className="account-form" onSubmit={handleSubmit}>
         <fieldset>
-          <legend>Identification du compte</legend>
+          <legend>Informations</legend>
           <div className="form-grid">
             <div className="form-field">
-              <label htmlFor="account-type">Type de compte</label>
+              <label htmlFor="account-type">Type</label>
               <select id="account-type" name="accountType" defaultValue="LIVRET_A">
-                {accountTypes.map((type) => (
-                  <option key={type} value={type}>{accountLabels[type]}</option>
-                ))}
+                {accountTypes.map((type) => <option key={type} value={type}>{accountLabels[type]}</option>)}
               </select>
             </div>
 
             <div className="form-field">
-              <label htmlFor="account-name">Nom du compte</label>
+              <label htmlFor="account-name">Nom</label>
               <input id="account-name" name="name" type="text" maxLength={120} defaultValue="Livret A" required />
             </div>
 
             <div className="form-field form-field-wide">
               <label htmlFor="institution-name">Établissement</label>
-              <input id="institution-name" name="institutionName" type="text" maxLength={160} placeholder="Ex. Crédit Mutuel, Trade Republic" required />
+              <input id="institution-name" name="institutionName" type="text" maxLength={160} placeholder="Ex. Crédit Mutuel" required />
             </div>
           </div>
         </fieldset>
 
         <fieldset>
-          <legend>Montants de départ</legend>
-          <p className="field-help">Les valeurs restent modifiables plus tard. Utilise 0 lorsque le compte n’est pas encore ouvert.</p>
+          <legend>Montants</legend>
           <div className="form-grid">
             <div className="form-field">
-              <label htmlFor="cash-balance">Valeur actuelle en euros</label>
+              <label htmlFor="cash-balance">Valeur actuelle</label>
               <input id="cash-balance" name="cashBalance" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
             </div>
 
             <div className="form-field">
-              <label htmlFor="monthly-contribution">Versement mensuel prévu</label>
+              <label htmlFor="monthly-contribution">Versement mensuel</label>
               <input id="monthly-contribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue="50" inputMode="decimal" />
             </div>
           </div>
         </fieldset>
 
-        <div className="form-notice" role="note">
-          <strong>Étape suivante</strong>
-          <p>Le formulaire sera relié au cas d’usage métier puis à PostgreSQL après l’ajout de l’authentification.</p>
-        </div>
+        <p className="field-help">Enregistrement local sur cet appareil uniquement.</p>
 
         <div className="form-actions">
           <Link className="secondary-link" href="/">Annuler</Link>
-          <button className="primary-button" type="button">Enregistrer en démonstration</button>
+          <button className="primary-button" type="submit">Enregistrer</button>
         </div>
       </form>
     </main>
