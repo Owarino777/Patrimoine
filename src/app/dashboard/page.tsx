@@ -1,5 +1,5 @@
-import { FinancialDashboard } from "../financial-dashboard";
+import { FinancialDashboardV2 } from "../financial-dashboard-v2";
 
 export default function DashboardPage() {
-  return <FinancialDashboard />;
+  return <FinancialDashboardV2 />;
 }
