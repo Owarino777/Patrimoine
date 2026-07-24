@@ -42,17 +42,14 @@ export default function NewAccountPage() {
       monthlyContribution,
     });
 
-    router.push("/#accounts");
+    router.push("/dashboard#accounts");
   }
 
   return (
     <main id="main-content" className="form-page" tabIndex={-1}>
       <div className="form-page-header">
-        <div>
-          <p className="eyebrow">Compte</p>
-          <h1>Ajouter un compte</h1>
-        </div>
-        <Link className="secondary-link" href="/">Retour</Link>
+        <div><p className="eyebrow">Compte</p><h1>Ajouter un compte</h1></div>
+        <Link className="secondary-link" href="/dashboard">Retour</Link>
       </div>
 
       <form className="account-form" onSubmit={handleSubmit}>
@@ -65,12 +62,10 @@ export default function NewAccountPage() {
                 {accountTypes.map((type) => <option key={type} value={type}>{accountLabels[type]}</option>)}
               </select>
             </div>
-
             <div className="form-field">
               <label htmlFor="account-name">Nom</label>
               <input id="account-name" name="name" type="text" maxLength={120} defaultValue="Livret A" required />
             </div>
-
             <div className="form-field form-field-wide">
               <label htmlFor="institution-name">Établissement</label>
               <input id="institution-name" name="institutionName" type="text" maxLength={160} placeholder="Ex. Crédit Mutuel" required />
@@ -85,18 +80,16 @@ export default function NewAccountPage() {
               <label htmlFor="cash-balance">Valeur actuelle</label>
               <input id="cash-balance" name="cashBalance" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
             </div>
-
             <div className="form-field">
               <label htmlFor="monthly-contribution">Versement mensuel</label>
-              <input id="monthly-contribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue="50" inputMode="decimal" />
+              <input id="monthly-contribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
             </div>
           </div>
         </fieldset>
 
         <p className="field-help">Enregistrement local sur cet appareil uniquement.</p>
-
         <div className="form-actions">
-          <Link className="secondary-link" href="/">Annuler</Link>
+          <Link className="secondary-link" href="/dashboard">Annuler</Link>
           <button className="primary-button" type="submit">Enregistrer</button>
         </div>
       </form>
