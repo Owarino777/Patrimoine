@@ -1,8 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
 import { dashboardAccounts } from "./dashboard-demo";
-import { DEMO_ACCOUNTS_STORAGE_KEY, type DemoAccount } from "./demo-account-storage";
+import {
+  DEMO_ACCOUNTS_CHANGED_EVENT,
+  DEMO_ACCOUNTS_STORAGE_KEY,
+  type DemoAccount,
+} from "./demo-account-storage";
 
 const euro = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -12,7 +17,11 @@ const euro = new Intl.NumberFormat("fr-FR", {
 
 function subscribeToStorage(onStoreChange: () => void): () => void {
   window.addEventListener("storage", onStoreChange);
-  return () => window.removeEventListener("storage", onStoreChange);
+  window.addEventListener(DEMO_ACCOUNTS_CHANGED_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(DEMO_ACCOUNTS_CHANGED_EVENT, onStoreChange);
+  };
 }
 
 function getStorageSnapshot(): string {
@@ -43,17 +52,15 @@ export function DemoAccountGrid() {
         amount: account.amount,
         monthlyContribution: account.monthlyContribution,
         status: "active" as const,
+        editable: true,
       }))
-    : dashboardAccounts;
+    : dashboardAccounts.map((account) => ({ ...account, editable: false }));
 
   return (
-    <>
-      {savedAccounts.length > 0 ? (
-        <p className="form-success" role="status">Compte enregistré sur cet appareil.</p>
-      ) : null}
-      <div className="account-grid">
-        {accounts.map((account) => (
-          <article className="account-card" key={account.id}>
+    <div className="account-grid">
+      {accounts.map((account) => {
+        const content = (
+          <>
             <div className="account-card-header">
               <span className="account-icon" aria-hidden="true">{account.name.slice(0, 1)}</span>
               <span className={`status-pill status-${account.status}`}>
@@ -65,9 +72,17 @@ export function DemoAccountGrid() {
               <div><dt>Valeur</dt><dd>{euro.format(account.amount)}</dd></div>
               <div><dt>Mensuel</dt><dd>{euro.format(account.monthlyContribution)}</dd></div>
             </dl>
-          </article>
-        ))}
-      </div>
-    </>
+          </>
+        );
+
+        return account.editable ? (
+          <Link className="account-card account-card-link" href={`/accounts/${account.id}`} key={account.id}>
+            {content}
+          </Link>
+        ) : (
+          <article className="account-card" key={account.id}>{content}</article>
+        );
+      })}
+    </div>
   );
 }

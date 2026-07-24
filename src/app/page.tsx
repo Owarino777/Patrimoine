@@ -1,100 +1,33 @@
 import Link from "next/link";
-import { monthlyPlan, nextActions } from "./dashboard-demo";
-import { DemoAccountGrid } from "./demo-account-grid";
-
-const euro = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
 
 export default function HomePage() {
-  const monthlyTotal = monthlyPlan.reduce((total, item) => total + item.amount, 0);
-
   return (
-    <div className="app-shell">
-      <aside className="sidebar" aria-label="Navigation principale">
-        <a className="brand" href="#top" aria-label="Patrimoine, accueil">
+    <main id="main-content" className="form-page landing-page" tabIndex={-1}>
+      <header className="form-page-header">
+        <Link className="brand" href="/" aria-label="Patrimoine, accueil">
           <span className="brand-mark" aria-hidden="true">P</span>
           <span>Patrimoine</span>
-        </a>
+        </Link>
+        <Link className="secondary-link" href="/dashboard">Ouvrir le tableau de bord</Link>
+      </header>
 
-        <nav>
-          <ul className="nav-list">
-            <li><a aria-current="page" href="#overview">Vue d’ensemble</a></li>
-            <li><a href="#accounts">Comptes</a></li>
-            <li><a href="#allocation">Plan mensuel</a></li>
-            <li><a href="#actions">À faire</a></li>
-          </ul>
-        </nav>
-
-        <div className="sidebar-note">
-          <span className="eyebrow">Démonstration</span>
-          <p>Données enregistrées uniquement sur cet appareil.</p>
+      <section className="hero-card landing-hero" aria-labelledby="landing-title">
+        <div>
+          <p className="eyebrow">Gestion patrimoniale simple</p>
+          <h1 id="landing-title">Suivez vos comptes, vos objectifs et votre progression.</h1>
+          <p className="hero-copy">Ajoutez uniquement les éléments utiles à votre situation. Vos données locales restent dans votre navigateur tant qu’aucun compte cloud n’est connecté.</p>
+          <div className="form-actions landing-actions">
+            <Link className="primary-button" href="/dashboard">Commencer en local</Link>
+            <span className="field-help">Compte utilisateur et synchronisation cloud : prochaine étape.</span>
+          </div>
         </div>
-      </aside>
+      </section>
 
-      <main id="main-content" className="dashboard" tabIndex={-1}>
-        <header id="top" className="topbar">
-          <div>
-            <p className="eyebrow">Tableau de bord</p>
-            <h1>Mon patrimoine</h1>
-          </div>
-          <Link className="primary-button" href="/accounts/new">Ajouter un compte</Link>
-        </header>
-
-        <section id="overview" aria-labelledby="overview-title" className="hero-card">
-          <div>
-            <p className="eyebrow">Total suivi</p>
-            <h2 id="overview-title">Mode local</h2>
-          </div>
-          <div className="hero-stat">
-            <strong>100 €</strong>
-            <span>investis par mois</span>
-          </div>
-        </section>
-
-        <section className="metrics-grid" aria-label="Indicateurs principaux">
-          <article className="metric-card"><span className="eyebrow">Budget mensuel</span><strong>{euro.format(monthlyTotal)}</strong></article>
-          <article className="metric-card"><span className="eyebrow">Épargne de sécurité</span><strong>0 / 5 000 €</strong></article>
-          <article className="metric-card"><span className="eyebrow">Horizon</span><strong>30 ans</strong></article>
-        </section>
-
-        <section id="accounts" aria-labelledby="accounts-title" className="section-card">
-          <div className="section-heading">
-            <div><p className="eyebrow">Comptes</p><h2 id="accounts-title">Mes enveloppes</h2></div>
-            <span className="demo-badge">Local</span>
-          </div>
-          <DemoAccountGrid />
-        </section>
-
-        <div className="two-column-grid">
-          <section id="allocation" aria-labelledby="allocation-title" className="section-card">
-            <div className="section-heading"><div><p className="eyebrow">Répartition</p><h2 id="allocation-title">200 € / mois</h2></div></div>
-            <div className="allocation-bar" role="img" aria-label="50 pour cent vacances, 25 pour cent Livret A, 25 pour cent PEA">
-              <span className="allocation-segment segment-vacances" style={{ width: "50%" }} />
-              <span className="allocation-segment segment-livret" style={{ width: "25%" }} />
-              <span className="allocation-segment segment-pea" style={{ width: "25%" }} />
-            </div>
-            <ul className="legend-list">
-              {monthlyPlan.map((item) => <li key={item.label}><span><span className={`legend-dot legend-${item.label.toLowerCase().replace(" ", "-")}`} aria-hidden="true" />{item.label}</span><strong>{euro.format(item.amount)}</strong></li>)}
-            </ul>
-          </section>
-
-          <section aria-labelledby="goal-title" className="section-card">
-            <div className="section-heading"><div><p className="eyebrow">Objectif</p><h2 id="goal-title">Livret A</h2></div></div>
-            <div className="goal-amount"><strong>0 €</strong><span>/ 5 000 €</span></div>
-            <progress value="0" max="5000">0 %</progress>
-          </section>
-        </div>
-
-        <section id="actions" aria-labelledby="actions-title" className="section-card">
-          <div className="section-heading"><div><p className="eyebrow">Priorités</p><h2 id="actions-title">À faire</h2></div></div>
-          <ol className="action-list">
-            {nextActions.slice(0, 3).map((action, index) => <li key={action}><span aria-hidden="true">{index + 1}</span><p>{action}</p>{index < 2 ? <Link href="/accounts/new">Ouvrir</Link> : <button type="button">Ouvrir</button>}</li>)}
-          </ol>
-        </section>
-      </main>
-    </div>
+      <section className="metrics-grid" aria-label="Fonctionnalités principales">
+        <article className="metric-card"><span className="eyebrow">Comptes</span><strong>Centraliser</strong></article>
+        <article className="metric-card"><span className="eyebrow">Objectifs</span><strong>Planifier</strong></article>
+        <article className="metric-card"><span className="eyebrow">Décisions</span><strong>Suivre</strong></article>
+      </section>
+    </main>
   );
 }
