@@ -27,6 +27,7 @@ export default function NewAccountPage() {
     const institutionName = String(form.get("institutionName") ?? "").trim();
     const accountType = String(form.get("accountType") ?? "OTHER");
     const amount = Number(form.get("cashBalance") ?? 0);
+    const investedCapital = Number(form.get("investedCapital") ?? amount);
     const monthlyContribution = Number(form.get("monthlyContribution") ?? 0);
     const annualReturnPercent = Number(form.get("annualReturnPercent") ?? 0);
 
@@ -34,9 +35,11 @@ export default function NewAccountPage() {
       !name ||
       !institutionName ||
       !Number.isFinite(amount) ||
+      !Number.isFinite(investedCapital) ||
       !Number.isFinite(monthlyContribution) ||
       !Number.isFinite(annualReturnPercent) ||
       amount < 0 ||
+      investedCapital < 0 ||
       monthlyContribution < 0 ||
       annualReturnPercent < -100 ||
       annualReturnPercent > 100
@@ -50,6 +53,7 @@ export default function NewAccountPage() {
       institutionName,
       accountType,
       amount,
+      investedCapital,
       monthlyContribution,
       annualReturnPercent,
     });
@@ -58,7 +62,7 @@ export default function NewAccountPage() {
   }
 
   return (
-    <main id="main-content" className="form-page" tabIndex={-1}>
+    <main id="main-content" className="form-page account-editor-page" tabIndex={-1}>
       <div className="form-page-header">
         <div><p className="eyebrow">Compte</p><h1>Ajouter un compte</h1></div>
         <Link className="secondary-link" href="/dashboard">Retour</Link>
@@ -93,6 +97,11 @@ export default function NewAccountPage() {
               <input id="cash-balance" name="cashBalance" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
             </div>
             <div className="form-field">
+              <label htmlFor="invested-capital">Capital investi</label>
+              <input id="invested-capital" name="investedCapital" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
+              <span className="field-hint">Permet de distinguer tes versements de la performance.</span>
+            </div>
+            <div className="form-field">
               <label htmlFor="monthly-contribution">Versement mensuel</label>
               <input id="monthly-contribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
             </div>
@@ -103,7 +112,7 @@ export default function NewAccountPage() {
           </div>
         </fieldset>
 
-        <p className="field-help">Enregistrement local sur cet appareil uniquement.</p>
+        <p className="field-help">Enregistrement local sur cet appareil uniquement. La synchronisation multi-appareils arrivera avec le compte utilisateur.</p>
         <div className="form-actions">
           <Link className="secondary-link" href="/dashboard">Annuler</Link>
           <button className="primary-button" type="submit">Enregistrer</button>
