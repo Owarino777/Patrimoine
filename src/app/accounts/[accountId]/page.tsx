@@ -38,6 +38,7 @@ export default function AccountDetailPage() {
       institutionName: String(form.get("institutionName") ?? "").trim(),
       amount: Number(form.get("amount") ?? 0),
       monthlyContribution: Number(form.get("monthlyContribution") ?? 0),
+      annualReturnPercent: Number(form.get("annualReturnPercent") ?? 0),
     };
 
     if (
@@ -45,8 +46,11 @@ export default function AccountDetailPage() {
       !updated.institutionName ||
       !Number.isFinite(updated.amount) ||
       !Number.isFinite(updated.monthlyContribution) ||
+      !Number.isFinite(updated.annualReturnPercent) ||
       updated.amount < 0 ||
-      updated.monthlyContribution < 0
+      updated.monthlyContribution < 0 ||
+      (updated.annualReturnPercent ?? 0) < -100 ||
+      (updated.annualReturnPercent ?? 0) > 100
     ) {
       setStatus("Vérifie les informations saisies.");
       return;
@@ -89,7 +93,7 @@ export default function AccountDetailPage() {
         </fieldset>
 
         <fieldset>
-          <legend>Montants</legend>
+          <legend>Montants et rendement</legend>
           <div className="form-grid">
             <div className="form-field">
               <label htmlFor="amount">Valeur actuelle</label>
@@ -98,6 +102,11 @@ export default function AccountDetailPage() {
             <div className="form-field">
               <label htmlFor="monthlyContribution">Versement mensuel</label>
               <input id="monthlyContribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue={currentAccount.monthlyContribution} />
+            </div>
+            <div className="form-field form-field-wide">
+              <label htmlFor="annualReturnPercent">Rendement annuel estimé (%)</label>
+              <input id="annualReturnPercent" name="annualReturnPercent" type="number" min="-100" max="100" step="0.1" defaultValue={currentAccount.annualReturnPercent ?? 0} aria-describedby="annual-return-help" />
+              <p className="field-help" id="annual-return-help">Ce taux est utilisé uniquement pour les projections de ce compte.</p>
             </div>
           </div>
         </fieldset>
