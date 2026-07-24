@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./management.css";
 import "./mobile-v2.css";
+import "./faithful-mobile.css";
 
 export const metadata: Metadata = {
   title: "Patrimoine",
@@ -18,7 +19,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#10251e",
+  themeColor: "#f7faf8",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
