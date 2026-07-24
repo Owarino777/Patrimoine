@@ -15,6 +15,7 @@ export default function AccountDetailPage() {
   const router = useRouter();
   const [account, setAccount] = useState<DemoAccount | null>(() => findDemoAccount(params.accountId));
   const [status, setStatus] = useState("");
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   if (!account) {
     return (
@@ -58,7 +59,6 @@ export default function AccountDetailPage() {
   }
 
   function handleDelete() {
-    if (!window.confirm(`Supprimer le compte « ${currentAccount.name} » ?`)) return;
     deleteDemoAccount(currentAccount.id);
     router.push("/dashboard");
   }
@@ -104,8 +104,18 @@ export default function AccountDetailPage() {
 
         {status ? <p className="form-success" role="status">{status}</p> : null}
 
+        {isConfirmingDelete ? (
+          <div className="delete-confirmation" role="group" aria-labelledby="delete-confirmation-title">
+            <p id="delete-confirmation-title">Supprimer définitivement « {currentAccount.name} » ?</p>
+            <div>
+              <button className="secondary-link" type="button" onClick={() => setIsConfirmingDelete(false)}>Annuler</button>
+              <button className="danger-button" type="button" onClick={handleDelete}>Confirmer la suppression</button>
+            </div>
+          </div>
+        ) : null}
+
         <div className="form-actions form-actions-between">
-          <button className="danger-button" type="button" onClick={handleDelete}>Supprimer</button>
+          <button className="danger-button" type="button" onClick={() => setIsConfirmingDelete(true)}>Supprimer</button>
           <button className="primary-button" type="submit">Enregistrer</button>
         </div>
       </form>
