@@ -26,18 +26,28 @@ export default function AccountDetailPage() {
     );
   }
 
+  const currentAccount = account;
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const updated: DemoAccount = {
-      ...account,
+      id: currentAccount.id,
+      accountType: currentAccount.accountType,
       name: String(form.get("name") ?? "").trim(),
       institutionName: String(form.get("institutionName") ?? "").trim(),
       amount: Number(form.get("amount") ?? 0),
       monthlyContribution: Number(form.get("monthlyContribution") ?? 0),
     };
 
-    if (!updated.name || !updated.institutionName || updated.amount < 0 || updated.monthlyContribution < 0) {
+    if (
+      !updated.name ||
+      !updated.institutionName ||
+      !Number.isFinite(updated.amount) ||
+      !Number.isFinite(updated.monthlyContribution) ||
+      updated.amount < 0 ||
+      updated.monthlyContribution < 0
+    ) {
       setStatus("Vérifie les informations saisies.");
       return;
     }
@@ -48,8 +58,8 @@ export default function AccountDetailPage() {
   }
 
   function handleDelete() {
-    if (!window.confirm(`Supprimer le compte « ${account.name} » ?`)) return;
-    deleteDemoAccount(account.id);
+    if (!window.confirm(`Supprimer le compte « ${currentAccount.name} » ?`)) return;
+    deleteDemoAccount(currentAccount.id);
     router.push("/dashboard");
   }
 
@@ -58,7 +68,7 @@ export default function AccountDetailPage() {
       <div className="form-page-header">
         <div>
           <p className="eyebrow">Compte</p>
-          <h1>{account.name}</h1>
+          <h1>{currentAccount.name}</h1>
         </div>
         <Link className="secondary-link" href="/dashboard">Retour</Link>
       </div>
@@ -69,11 +79,11 @@ export default function AccountDetailPage() {
           <div className="form-grid">
             <div className="form-field">
               <label htmlFor="name">Nom</label>
-              <input id="name" name="name" defaultValue={account.name} required />
+              <input id="name" name="name" defaultValue={currentAccount.name} required />
             </div>
             <div className="form-field">
               <label htmlFor="institutionName">Établissement</label>
-              <input id="institutionName" name="institutionName" defaultValue={account.institutionName} required />
+              <input id="institutionName" name="institutionName" defaultValue={currentAccount.institutionName} required />
             </div>
           </div>
         </fieldset>
@@ -83,11 +93,11 @@ export default function AccountDetailPage() {
           <div className="form-grid">
             <div className="form-field">
               <label htmlFor="amount">Valeur actuelle</label>
-              <input id="amount" name="amount" type="number" min="0" step="0.01" defaultValue={account.amount} />
+              <input id="amount" name="amount" type="number" min="0" step="0.01" defaultValue={currentAccount.amount} />
             </div>
             <div className="form-field">
               <label htmlFor="monthlyContribution">Versement mensuel</label>
-              <input id="monthlyContribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue={account.monthlyContribution} />
+              <input id="monthlyContribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue={currentAccount.monthlyContribution} />
             </div>
           </div>
         </fieldset>
