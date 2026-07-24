@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { dashboardAccounts } from "./dashboard-demo";
-import { readDemoAccounts, type DemoAccount } from "./demo-account-storage";
+import { DEMO_ACCOUNTS_STORAGE_KEY, type DemoAccount } from "./demo-account-storage";
 
 const euro = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -10,12 +10,31 @@ const euro = new Intl.NumberFormat("fr-FR", {
   maximumFractionDigits: 0,
 });
 
-export function DemoAccountGrid() {
-  const [savedAccounts, setSavedAccounts] = useState<DemoAccount[]>([]);
+function subscribeToStorage(onStoreChange: () => void): () => void {
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+}
 
-  useEffect(() => {
-    setSavedAccounts(readDemoAccounts());
-  }, []);
+function getStorageSnapshot(): string {
+  return window.localStorage.getItem(DEMO_ACCOUNTS_STORAGE_KEY) ?? "[]";
+}
+
+function getServerSnapshot(): string {
+  return "[]";
+}
+
+function parseAccounts(snapshot: string): DemoAccount[] {
+  try {
+    const parsed: unknown = JSON.parse(snapshot);
+    return Array.isArray(parsed) ? (parsed as DemoAccount[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function DemoAccountGrid() {
+  const storageSnapshot = useSyncExternalStore(subscribeToStorage, getStorageSnapshot, getServerSnapshot);
+  const savedAccounts = useMemo(() => parseAccounts(storageSnapshot), [storageSnapshot]);
 
   const accounts = savedAccounts.length > 0
     ? savedAccounts.map((account) => ({
