@@ -214,7 +214,7 @@ export function FinancialDashboard() {
             <div className="form-grid dashboard-settings-grid">
               <label className="form-field"><span>Objectif épargne de sécurité</span><input type="number" min="0" step="100" value={settings.emergencyTarget} onChange={(event) => saveSettings({ ...settings, emergencyTarget: Number(event.target.value) || 0 })} /></label>
               <label className="form-field"><span>Horizon d’investissement</span><input type="number" min="1" max="60" value={settings.horizonYears} onChange={(event) => saveSettings({ ...settings, horizonYears: Math.max(1, Number(event.target.value) || 1) })} /></label>
-              <label className="form-field"><span>Rendement annuel estimé (%)</span><input type="number" min="0" max="20" step="0.1" value={settings.expectedReturnPercent} onChange={(event) => saveSettings({ ...settings, expectedReturnPercent: Math.max(0, Number(event.target.value) || 0 })} /></label>
+              <label className="form-field"><span>Rendement annuel estimé (%)</span><input type="number" min="0" max="20" step="0.1" value={settings.expectedReturnPercent} onChange={(event) => saveSettings({ ...settings, expectedReturnPercent: Math.max(0, Number(event.target.value) || 0) })} /></label>
             </div>
           </section>
         ) : null}
