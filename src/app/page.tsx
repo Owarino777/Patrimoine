@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { dashboardAccounts, monthlyPlan, nextActions } from "./dashboard-demo";
 
 const euro = new Intl.NumberFormat("fr-FR", {
@@ -40,7 +41,7 @@ export default function HomePage() {
             <p className="eyebrow">Vendredi 24 juillet</p>
             <h1>Bonjour Malik, construisons ton patrimoine.</h1>
           </div>
-          <button className="primary-button" type="button">Ajouter un compte</button>
+          <Link className="primary-button" href="/accounts/new">Ajouter un compte</Link>
         </header>
 
         <section id="overview" aria-labelledby="overview-title" className="hero-card">
@@ -155,7 +156,7 @@ export default function HomePage() {
               <li key={action}>
                 <span aria-hidden="true">{index + 1}</span>
                 <p>{action}</p>
-                <button type="button">Commencer</button>
+                {index < 2 ? <Link href="/accounts/new">Commencer</Link> : <button type="button">Commencer</button>}
               </li>
             ))}
           </ol>
