@@ -41,7 +41,7 @@ export class CreatePortfolio {
       id: portfolioId(command.id),
       userId,
       name,
-      description: command.description,
+      ...(command.description !== undefined ? { description: command.description } : {}),
       baseCurrency: currency(command.baseCurrency),
       now: this.now(),
     });
