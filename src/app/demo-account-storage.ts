@@ -7,6 +7,7 @@ export type DemoAccount = Readonly<{
   accountType: string;
   institutionName: string;
   amount: number;
+  investedCapital?: number;
   monthlyContribution: number;
   annualReturnPercent?: number;
 }>;
