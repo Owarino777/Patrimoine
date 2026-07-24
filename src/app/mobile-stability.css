@@ -1,0 +1,462 @@
+/* Mobile stability layer: loaded after all legacy mobile styles. */
+@media (max-width: 58rem) {
+  :root {
+    --mobile-nav-height: 5.25rem;
+    --mobile-page-gutter: clamp(0.85rem, 4vw, 1.15rem);
+  }
+
+  *,
+  *::before,
+  *::after {
+    min-width: 0;
+  }
+
+  html {
+    overflow-x: clip;
+    scroll-padding-bottom: calc(var(--mobile-nav-height) + 1rem + env(safe-area-inset-bottom));
+  }
+
+  body {
+    min-width: 20rem;
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  img,
+  svg,
+  canvas {
+    max-width: 100%;
+  }
+
+  button,
+  input,
+  select,
+  textarea,
+  a {
+    touch-action: manipulation;
+  }
+
+  .dashboard,
+  .form-page {
+    width: 100%;
+    max-width: 42rem;
+    padding:
+      max(1rem, env(safe-area-inset-top))
+      var(--mobile-page-gutter)
+      calc(var(--mobile-nav-height) + 2.25rem + env(safe-area-inset-bottom));
+  }
+
+  .dashboard {
+    gap: 0.8rem;
+  }
+
+  .topbar,
+  .form-page-header,
+  .account-detail-header {
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .topbar h1,
+  .form-page h1,
+  .accounts-list-page h1,
+  .account-detail-page h1,
+  .profile-page h1 {
+    font-size: clamp(2rem, 10vw, 2.65rem);
+    line-height: 1.02;
+    overflow-wrap: anywhere;
+  }
+
+  .hero-card.finance-hero {
+    min-height: 12.25rem;
+    padding: 1.25rem;
+    border-radius: 1.45rem;
+  }
+
+  .finance-hero h2 {
+    font-size: clamp(2.65rem, 14vw, 3.75rem);
+  }
+
+  .finance-hero .hero-stat {
+    left: 0.85rem;
+    right: 0.85rem;
+    bottom: 0.85rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.8rem 0.9rem;
+  }
+
+  .finance-hero .hero-stat span {
+    font-size: 0.78rem;
+    line-height: 1.25;
+    text-align: right;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .metric-card {
+    min-height: 7.8rem;
+    padding: 0.85rem;
+  }
+
+  .metric-card:nth-child(3) {
+    grid-column: 1 / -1;
+    min-height: auto;
+  }
+
+  .metric-card:nth-child(3) .metric-with-icon,
+  .metric-card:nth-child(3) {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .metric-card .eyebrow {
+    font-size: 0.59rem;
+    line-height: 1.35;
+    letter-spacing: 0.1em;
+    overflow-wrap: anywhere;
+  }
+
+  .metric-card strong {
+    font-size: clamp(1.15rem, 6vw, 1.45rem);
+    line-height: 1.1;
+  }
+
+  .metric-card p {
+    font-size: 0.7rem;
+    line-height: 1.3;
+  }
+
+  .cash-action-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 0.9rem;
+    gap: 0.75rem;
+  }
+
+  .cash-action-copy h2 {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .cash-action-summary {
+    text-align: right;
+  }
+
+  .cash-primary-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 2.9rem;
+    margin: 0;
+    background: #eab83d;
+    color: #3f2d06;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .cash-primary-button:hover,
+  .cash-primary-button:active,
+  .cash-primary-button:focus-visible {
+    background: #dca92f;
+    color: #2e2105;
+  }
+
+  .cash-counter-card {
+    scroll-margin-top: 1rem;
+    padding: 1rem;
+  }
+
+  .cash-counter-heading {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .cash-counter-heading h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .cash-counter-totals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .cash-counter-totals > span {
+    min-height: 3rem;
+    padding: 0.65rem;
+    justify-content: space-between;
+    font-size: 0.75rem;
+  }
+
+  .cash-counter-totals .cash-grand-total {
+    grid-column: 1 / -1;
+  }
+
+  .cash-groups {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .cash-groups > section {
+    padding: 0.8rem;
+  }
+
+  .cash-field {
+    grid-template-columns: minmax(3.5rem, auto) minmax(4.75rem, 5.5rem) minmax(5rem, 1fr);
+    gap: 0.6rem;
+    padding: 0.65rem;
+  }
+
+  .cash-field > span,
+  .cash-field strong {
+    font-size: 0.9rem;
+  }
+
+  .cash-field input {
+    min-height: 2.75rem;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .section-card,
+  .empty-state,
+  .account-list-summary article,
+  .profile-card,
+  .account-summary-card,
+  .account-insight-card {
+    overflow: hidden;
+  }
+
+  .section-heading {
+    gap: 0.75rem;
+  }
+
+  .section-heading > div {
+    min-width: 0;
+  }
+
+  .section-heading h2 {
+    overflow-wrap: anywhere;
+  }
+
+  .empty-state {
+    padding: 1rem;
+  }
+
+  .empty-state h2,
+  .empty-state h3 {
+    font-size: 1.35rem;
+    line-height: 1.18;
+  }
+
+  .empty-state p {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .empty-state .primary-button {
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .two-column-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .projection-card {
+    min-height: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.85rem;
+  }
+
+  .projection-value {
+    min-width: 7rem;
+  }
+
+  .action-list li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .action-list p {
+    overflow-wrap: anywhere;
+  }
+
+  .account-list-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-list-summary article {
+    min-height: 6.6rem;
+  }
+
+  .account-list-summary article:last-child {
+    grid-column: 1 / -1;
+    min-height: 5.5rem;
+  }
+
+  .accounts-list,
+  .account-grid {
+    width: 100%;
+  }
+
+  .account-list-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.7rem;
+  }
+
+  .account-list-copy,
+  .account-list-value {
+    min-width: 0;
+  }
+
+  .account-list-copy strong,
+  .account-list-copy small,
+  .account-list-value strong,
+  .account-list-value small {
+    overflow-wrap: anywhere;
+  }
+
+  .form-page-header,
+  .account-detail-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .form-page-header .secondary-link,
+  .form-page-header .primary-button,
+  .account-detail-header > .secondary-link,
+  .account-detail-header > button {
+    width: auto;
+    max-width: 9rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .account-form fieldset {
+    min-width: 0;
+    padding: 1rem;
+  }
+
+  .account-form legend {
+    max-width: calc(100% - 1rem);
+    padding: 0 0.35rem;
+    font-size: 1.25rem;
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field,
+  .form-field-wide {
+    grid-column: auto;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    min-height: 3.15rem;
+    font-size: 1rem;
+  }
+
+  .account-summary-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-summary-card article {
+    min-height: 6.5rem;
+  }
+
+  .profile-page .profile-card,
+  .profile-page .section-card {
+    padding: 1rem;
+  }
+
+  .profile-page p {
+    overflow-wrap: anywhere;
+  }
+
+  .sidebar,
+  .mobile-bottom-nav {
+    min-height: var(--mobile-nav-height);
+    padding-bottom: max(0.45rem, env(safe-area-inset-bottom));
+  }
+
+  .sidebar .icon-nav-list a,
+  .mobile-bottom-nav a {
+    min-height: 3.6rem;
+  }
+
+  .sidebar .icon-nav-list li:nth-child(3) a,
+  .mobile-bottom-nav a:nth-child(3) {
+    margin-top: -1.15rem;
+  }
+}
+
+@media (max-width: 23.5rem) {
+  :root {
+    --mobile-page-gutter: 0.75rem;
+  }
+
+  .topbar h1,
+  .form-page h1,
+  .accounts-list-page h1,
+  .account-detail-page h1,
+  .profile-page h1 {
+    font-size: 2rem;
+  }
+
+  .finance-hero .hero-stat {
+    grid-template-columns: 1fr;
+  }
+
+  .finance-hero .hero-stat span {
+    text-align: left;
+  }
+
+  .metrics-grid,
+  .account-list-summary,
+  .account-summary-card {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card:nth-child(3),
+  .account-list-summary article:last-child {
+    grid-column: auto;
+  }
+
+  .projection-card,
+  .form-page-header,
+  .account-detail-header {
+    grid-template-columns: 1fr;
+  }
+
+  .projection-value,
+  .form-page-header .secondary-link,
+  .form-page-header .primary-button,
+  .account-detail-header > .secondary-link,
+  .account-detail-header > button {
+    width: 100%;
+    max-width: none;
+  }
+
+  .cash-field {
+    grid-template-columns: 3.25rem minmax(4rem, 1fr) minmax(4.5rem, auto);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
