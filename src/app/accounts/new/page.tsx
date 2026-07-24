@@ -28,8 +28,9 @@ export default function NewAccountPage() {
     const accountType = String(form.get("accountType") ?? "OTHER");
     const amount = Number(form.get("cashBalance") ?? 0);
     const monthlyContribution = Number(form.get("monthlyContribution") ?? 0);
+    const annualReturnPercent = Number(form.get("annualReturnPercent") ?? 0);
 
-    if (!name || !institutionName || !Number.isFinite(amount) || !Number.isFinite(monthlyContribution) || amount < 0 || monthlyContribution < 0) {
+    if (!name || !institutionName || !Number.isFinite(amount) || !Number.isFinite(monthlyContribution) || !Number.isFinite(annualReturnPercent) || amount < 0 || monthlyContribution < 0 || annualReturnPercent < -100 || annualReturnPercent > 100) {
       return;
     }
 
@@ -40,6 +41,7 @@ export default function NewAccountPage() {
       accountType,
       amount,
       monthlyContribution,
+      annualReturnPercent,
     });
 
     router.push("/dashboard#accounts");
@@ -74,7 +76,7 @@ export default function NewAccountPage() {
         </fieldset>
 
         <fieldset>
-          <legend>Montants</legend>
+          <legend>Montants et rendement</legend>
           <div className="form-grid">
             <div className="form-field">
               <label htmlFor="cash-balance">Valeur actuelle</label>
@@ -83,6 +85,11 @@ export default function NewAccountPage() {
             <div className="form-field">
               <label htmlFor="monthly-contribution">Versement mensuel</label>
               <input id="monthly-contribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
+            </div>
+            <div className="form-field form-field-wide">
+              <label htmlFor="annual-return">Rendement annuel estimé (%)</label>
+              <input id="annual-return" name="annualReturnPercent" type="number" min="-100" max="100" step="0.1" defaultValue="0" inputMode="decimal" aria-describedby="annual-return-help" />
+              <p className="field-help" id="annual-return-help">Exemples : Livret A selon son taux, ETF Monde autour de ton hypothèse personnelle, espèces à 0 %.</p>
             </div>
           </div>
         </fieldset>
