@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { accountTypes } from "../../../domain/account/financial-account";
 import { saveDemoAccount } from "../../demo-account-storage";
+import { MobileBottomNav } from "../../mobile-bottom-nav";
 
 const accountLabels: Record<(typeof accountTypes)[number], string> = {
   LIVRET_A: "Livret A",
@@ -62,62 +63,65 @@ export default function NewAccountPage() {
   }
 
   return (
-    <main id="main-content" className="form-page account-editor-page" tabIndex={-1}>
-      <div className="form-page-header">
-        <div><p className="eyebrow">Compte</p><h1>Ajouter un compte</h1></div>
-        <Link className="secondary-link" href="/dashboard">Retour</Link>
-      </div>
-
-      <form className="account-form" onSubmit={handleSubmit}>
-        <fieldset>
-          <legend>Informations</legend>
-          <div className="form-grid">
-            <div className="form-field">
-              <label htmlFor="account-type">Type</label>
-              <select id="account-type" name="accountType" defaultValue="LIVRET_A">
-                {accountTypes.map((type) => <option key={type} value={type}>{accountLabels[type]}</option>)}
-              </select>
-            </div>
-            <div className="form-field">
-              <label htmlFor="account-name">Nom</label>
-              <input id="account-name" name="name" type="text" maxLength={120} defaultValue="Livret A" required />
-            </div>
-            <div className="form-field form-field-wide">
-              <label htmlFor="institution-name">Établissement</label>
-              <input id="institution-name" name="institutionName" type="text" maxLength={160} placeholder="Ex. Crédit Mutuel" required />
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Montants et rendement</legend>
-          <div className="form-grid">
-            <div className="form-field">
-              <label htmlFor="cash-balance">Valeur actuelle</label>
-              <input id="cash-balance" name="cashBalance" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
-            </div>
-            <div className="form-field">
-              <label htmlFor="invested-capital">Capital investi</label>
-              <input id="invested-capital" name="investedCapital" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
-              <span className="field-hint">Permet de distinguer tes versements de la performance.</span>
-            </div>
-            <div className="form-field">
-              <label htmlFor="monthly-contribution">Versement mensuel</label>
-              <input id="monthly-contribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
-            </div>
-            <div className="form-field">
-              <label htmlFor="annual-return-percent">Rendement annuel estimé (%)</label>
-              <input id="annual-return-percent" name="annualReturnPercent" type="number" min="-100" max="100" step="0.1" defaultValue="0" inputMode="decimal" />
-            </div>
-          </div>
-        </fieldset>
-
-        <p className="field-help">Enregistrement local sur cet appareil uniquement. La synchronisation multi-appareils arrivera avec le compte utilisateur.</p>
-        <div className="form-actions">
-          <Link className="secondary-link" href="/dashboard">Annuler</Link>
-          <button className="primary-button" type="submit">Enregistrer</button>
+    <>
+      <main id="main-content" className="form-page account-editor-page" tabIndex={-1}>
+        <div className="form-page-header">
+          <div><p className="eyebrow">Compte</p><h1>Ajouter un compte</h1></div>
+          <Link className="secondary-link" href="/dashboard">Retour</Link>
         </div>
-      </form>
-    </main>
+
+        <form className="account-form" onSubmit={handleSubmit}>
+          <fieldset>
+            <legend>Informations</legend>
+            <div className="form-grid">
+              <div className="form-field">
+                <label htmlFor="account-type">Type</label>
+                <select id="account-type" name="accountType" defaultValue="LIVRET_A">
+                  {accountTypes.map((type) => <option key={type} value={type}>{accountLabels[type]}</option>)}
+                </select>
+              </div>
+              <div className="form-field">
+                <label htmlFor="account-name">Nom</label>
+                <input id="account-name" name="name" type="text" maxLength={120} defaultValue="Livret A" required />
+              </div>
+              <div className="form-field form-field-wide">
+                <label htmlFor="institution-name">Établissement</label>
+                <input id="institution-name" name="institutionName" type="text" maxLength={160} placeholder="Ex. Crédit Mutuel" required />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Montants et rendement</legend>
+            <div className="form-grid">
+              <div className="form-field">
+                <label htmlFor="cash-balance">Valeur actuelle</label>
+                <input id="cash-balance" name="cashBalance" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
+              </div>
+              <div className="form-field">
+                <label htmlFor="invested-capital">Capital investi</label>
+                <input id="invested-capital" name="investedCapital" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
+                <span className="field-hint">Permet de distinguer tes versements de la performance.</span>
+              </div>
+              <div className="form-field">
+                <label htmlFor="monthly-contribution">Versement mensuel</label>
+                <input id="monthly-contribution" name="monthlyContribution" type="number" min="0" step="0.01" defaultValue="0" inputMode="decimal" />
+              </div>
+              <div className="form-field">
+                <label htmlFor="annual-return-percent">Rendement annuel estimé (%)</label>
+                <input id="annual-return-percent" name="annualReturnPercent" type="number" min="-100" max="100" step="0.1" defaultValue="0" inputMode="decimal" />
+              </div>
+            </div>
+          </fieldset>
+
+          <p className="field-help">Enregistrement local sur cet appareil uniquement. La synchronisation multi-appareils arrivera avec le compte utilisateur.</p>
+          <div className="form-actions">
+            <Link className="secondary-link" href="/dashboard">Annuler</Link>
+            <button className="primary-button" type="submit">Enregistrer</button>
+          </div>
+        </form>
+      </main>
+      <MobileBottomNav current="accounts" />
+    </>
   );
 }
