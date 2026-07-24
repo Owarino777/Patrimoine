@@ -3,6 +3,7 @@ import "./globals.css";
 import "./management.css";
 import "./mobile-v2.css";
 import "./faithful-mobile.css";
+import "./mobile-stability.css";
 
 export const metadata: Metadata = {
   title: "Patrimoine",
