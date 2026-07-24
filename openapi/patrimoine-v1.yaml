@@ -1,0 +1,1151 @@
+openapi: 3.1.0
+info:
+  title: Patrimoine API
+  version: 1.0.0
+  description: API contractuelle du MVP Patrimoine. Aucun ordre financier n'est exécuté.
+servers:
+  - url: /api/v1
+security:
+  - sessionAuth: []
+tags:
+  - name: Portfolios
+  - name: Accounts
+  - name: Assets
+  - name: Positions
+  - name: Transactions
+  - name: Allocation
+  - name: Projections
+  - name: Decisions
+paths:
+  /portfolios:
+    get:
+      tags: [Portfolios]
+      operationId: listPortfolios
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Liste paginée des portefeuilles accessibles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+    post:
+      tags: [Portfolios]
+      operationId: createPortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePortfolioRequest'
+      responses:
+        '201':
+          description: Portefeuille créé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /portfolios/{portfolioId}:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Portfolios]
+      operationId: getPortfolio
+      responses:
+        '200':
+          description: Portefeuille demandé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Portfolios]
+      operationId: updatePortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePortfolioRequest'
+      responses:
+        '200':
+          description: Portefeuille modifié.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+    delete:
+      tags: [Portfolios]
+      operationId: deletePortfolio
+      responses:
+        '204':
+          description: Portefeuille supprimé.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /portfolios/{portfolioId}/accounts:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Accounts]
+      operationId: listAccounts
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Comptes du portefeuille.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Accounts]
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '201':
+          description: Compte créé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /portfolios/{portfolioId}/accounts/{accountId}:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+      - $ref: '#/components/parameters/AccountId'
+    get:
+      tags: [Accounts]
+      operationId: getAccount
+      responses:
+        '200':
+          description: Compte demandé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Accounts]
+      operationId: updateAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequest'
+      responses:
+        '200':
+          description: Compte modifié.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+    delete:
+      tags: [Accounts]
+      operationId: deleteAccount
+      responses:
+        '204':
+          description: Compte supprimé.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /assets:
+    get:
+      tags: [Assets]
+      operationId: listAssets
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: query
+          schema:
+            type: string
+            maxLength: 100
+        - in: query
+          name: assetClass
+          schema:
+            $ref: '#/components/schemas/AssetClass'
+      responses:
+        '200':
+          description: Référentiel visible et actifs personnalisés propres.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
+    post:
+      tags: [Assets]
+      operationId: createCustomAsset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssetRequest'
+      responses:
+        '201':
+          description: Actif personnalisé créé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /portfolios/{portfolioId}/positions:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Positions]
+      operationId: listPositions
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: accountId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Positions du portefeuille.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Positions]
+      operationId: createPosition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePositionRequest'
+      responses:
+        '201':
+          description: Position créée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /portfolios/{portfolioId}/transactions:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Transactions]
+      operationId: listTransactions
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Transactions du portefeuille.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionListResponse'
+    post:
+      tags: [Transactions]
+      operationId: createTransaction
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransactionRequest'
+      responses:
+        '201':
+          description: Transaction créée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /portfolios/{portfolioId}/allocation-targets:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Allocation]
+      operationId: getAllocationTargets
+      responses:
+        '200':
+          description: Allocation cible actuelle.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationTargetsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Allocation]
+      operationId: replaceAllocationTargets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceAllocationTargetsRequest'
+      responses:
+        '200':
+          description: Allocation remplacée atomiquement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationTargetsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /portfolios/{portfolioId}/projections:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    post:
+      tags: [Projections]
+      operationId: createProjection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectionRequest'
+      responses:
+        '201':
+          description: Scénario déterministe calculé et enregistré.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /portfolios/{portfolioId}/decisions:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Decisions]
+      operationId: listDecisions
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Journal des décisions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecisionListResponse'
+    post:
+      tags: [Decisions]
+      operationId: createDecision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDecisionRequest'
+      responses:
+        '201':
+          description: Décision créée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecisionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: patrimoine_session
+  parameters:
+    PortfolioId:
+      in: path
+      name: portfolioId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AccountId:
+      in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Limit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Cursor:
+      in: query
+      name: cursor
+      schema:
+        type: string
+        maxLength: 512
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      required: true
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
+  responses:
+    ValidationError:
+      description: Données invalides.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthenticated:
+      description: Session absente ou invalide.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Ressource inexistante ou inaccessible.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflit avec l’état actuel.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PreconditionFailed:
+      description: La ressource a été modifiée depuis sa lecture.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    Currency:
+      type: string
+      pattern: '^[A-Z]{3}$'
+      examples: [EUR]
+    DecimalQuantity:
+      type: string
+      pattern: '^(0|[1-9][0-9]*)(\.[0-9]{1,18})?$'
+      examples: ['12.500000000000000000']
+    Money:
+      type: object
+      additionalProperties: false
+      required: [amountMinor, currency]
+      properties:
+        amountMinor:
+          type: integer
+          minimum: 0
+          examples: [10025]
+        currency:
+          $ref: '#/components/schemas/Currency'
+    PageInfo:
+      type: object
+      additionalProperties: false
+      required: [nextCursor, hasMore]
+      properties:
+        nextCursor:
+          type: [string, 'null']
+        hasMore:
+          type: boolean
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        field:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, requestId]
+          properties:
+            code:
+              type: string
+              enum: [VALIDATION_ERROR, UNAUTHENTICATED, NOT_FOUND, CONFLICT, PRECONDITION_FAILED, RATE_LIMITED, INTERNAL_ERROR]
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: array
+              items:
+                $ref: '#/components/schemas/ErrorDetail'
+    Portfolio:
+      type: object
+      additionalProperties: false
+      required: [id, name, baseCurrency, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, 'null']
+        baseCurrency:
+          $ref: '#/components/schemas/Currency'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreatePortfolioRequest:
+      type: object
+      additionalProperties: false
+      required: [name, baseCurrency]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 1000
+        baseCurrency:
+          $ref: '#/components/schemas/Currency'
+    UpdatePortfolioRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 1000
+    PortfolioResponse:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Portfolio'
+    PortfolioListResponse:
+      type: object
+      additionalProperties: false
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Portfolio'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    AccountType:
+      type: string
+      enum: [LIVRET_A, LDDS, PEA, CTO, PER, CRYPTO_WALLET, CASH, OTHER]
+    Account:
+      type: object
+      additionalProperties: false
+      required: [id, portfolioId, institutionName, name, accountType, currency, cashBalance, plannedMonthlyContribution, isArchived, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        portfolioId:
+          type: string
+          format: uuid
+        institutionName:
+          type: string
+        name:
+          type: string
+        accountType:
+          $ref: '#/components/schemas/AccountType'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        cashBalance:
+          $ref: '#/components/schemas/Money'
+        plannedMonthlyContribution:
+          $ref: '#/components/schemas/Money'
+        objective:
+          type: [string, 'null']
+        horizonYears:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 100
+        isArchived:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateAccountRequest:
+      type: object
+      additionalProperties: false
+      required: [institutionName, name, accountType, currency]
+      properties:
+        institutionName:
+          type: string
+          minLength: 1
+          maxLength: 160
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        accountType:
+          $ref: '#/components/schemas/AccountType'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        cashBalanceMinor:
+          type: integer
+          minimum: 0
+          default: 0
+        plannedMonthlyContributionMinor:
+          type: integer
+          minimum: 0
+          default: 0
+        objective:
+          type: string
+          maxLength: 1000
+        horizonYears:
+          type: integer
+          minimum: 0
+          maximum: 100
+    UpdateAccountRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        institutionName:
+          type: string
+          minLength: 1
+          maxLength: 160
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        cashBalanceMinor:
+          type: integer
+          minimum: 0
+        plannedMonthlyContributionMinor:
+          type: integer
+          minimum: 0
+        objective:
+          type: [string, 'null']
+          maxLength: 1000
+        horizonYears:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 100
+        isArchived:
+          type: boolean
+    AccountResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Account'
+    AccountListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    AssetClass:
+      type: string
+      enum: [CASH, EQUITY, ETF, BOND, FUND, CRYPTO, COMMODITY, REAL_ESTATE, OTHER]
+    Asset:
+      type: object
+      additionalProperties: false
+      required: [id, identifierType, identifier, name, assetClass, currency, isCustom, isActive]
+      properties:
+        id:
+          type: string
+          format: uuid
+        identifierType:
+          type: string
+          enum: [ISIN, TICKER, CRYPTO_SYMBOL, CUSTOM]
+        identifier:
+          type: string
+        name:
+          type: string
+        assetClass:
+          $ref: '#/components/schemas/AssetClass'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        countryCode:
+          type: [string, 'null']
+          pattern: '^[A-Z]{2}$'
+        sector:
+          type: [string, 'null']
+        isCustom:
+          type: boolean
+        isActive:
+          type: boolean
+    CreateAssetRequest:
+      type: object
+      additionalProperties: false
+      required: [identifier, name, assetClass, currency]
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          maxLength: 64
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        assetClass:
+          $ref: '#/components/schemas/AssetClass'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        countryCode:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        sector:
+          type: string
+          maxLength: 120
+    AssetResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Asset'
+    AssetListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asset'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    Position:
+      type: object
+      additionalProperties: false
+      required: [id, portfolioId, accountId, asset, quantity, priceCurrency, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        portfolioId:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        asset:
+          $ref: '#/components/schemas/Asset'
+        quantity:
+          $ref: '#/components/schemas/DecimalQuantity'
+        averageUnitCost:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        currentUnitPrice:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        priceCurrency:
+          $ref: '#/components/schemas/Currency'
+        riskLevel:
+          type: [string, 'null']
+          enum: [LOW, MODERATE, HIGH, SPECULATIVE, null]
+        holdingObjective:
+          type: [string, 'null']
+        valuedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreatePositionRequest:
+      type: object
+      additionalProperties: false
+      required: [accountId, assetId, quantity, priceCurrency]
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        assetId:
+          type: string
+          format: uuid
+        quantity:
+          $ref: '#/components/schemas/DecimalQuantity'
+        averageUnitCostMinor:
+          type: integer
+          minimum: 0
+        currentUnitPriceMinor:
+          type: integer
+          minimum: 0
+        priceCurrency:
+          $ref: '#/components/schemas/Currency'
+        riskLevel:
+          type: string
+          enum: [LOW, MODERATE, HIGH, SPECULATIVE]
+        holdingObjective:
+          type: string
+          maxLength: 1000
+    PositionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Position'
+    PositionListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    TransactionType:
+      type: string
+      enum: [DEPOSIT, WITHDRAWAL, BUY, SELL, DIVIDEND, INTEREST, FEE, TRANSFER, ADJUSTMENT]
+    Transaction:
+      type: object
+      additionalProperties: false
+      required: [id, portfolioId, accountId, transactionType, occurredAt, currency, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        portfolioId:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        assetId:
+          type: [string, 'null']
+          format: uuid
+        transactionType:
+          $ref: '#/components/schemas/TransactionType'
+        quantity:
+          oneOf:
+            - $ref: '#/components/schemas/DecimalQuantity'
+            - type: 'null'
+        unitPriceMinor:
+          type: [integer, 'null']
+          minimum: 0
+        amountMinor:
+          type: [integer, 'null']
+        feesMinor:
+          type: integer
+          minimum: 0
+        currency:
+          $ref: '#/components/schemas/Currency'
+        occurredAt:
+          type: string
+          format: date-time
+        note:
+          type: [string, 'null']
+        createdAt:
+          type: string
+          format: date-time
+    CreateTransactionRequest:
+      type: object
+      additionalProperties: false
+      required: [accountId, transactionType, currency, occurredAt]
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        assetId:
+          type: string
+          format: uuid
+        transactionType:
+          $ref: '#/components/schemas/TransactionType'
+        quantity:
+          $ref: '#/components/schemas/DecimalQuantity'
+        unitPriceMinor:
+          type: integer
+          minimum: 0
+        amountMinor:
+          type: integer
+        feesMinor:
+          type: integer
+          minimum: 0
+          default: 0
+        currency:
+          $ref: '#/components/schemas/Currency'
+        occurredAt:
+          type: string
+          format: date-time
+        note:
+          type: string
+          maxLength: 1000
+    TransactionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Transaction'
+    TransactionListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    AllocationTarget:
+      type: object
+      additionalProperties: false
+      required: [assetClass, targetBasisPoints]
+      properties:
+        assetClass:
+          $ref: '#/components/schemas/AssetClass'
+        targetBasisPoints:
+          type: integer
+          minimum: 0
+          maximum: 10000
+    ReplaceAllocationTargetsRequest:
+      type: object
+      additionalProperties: false
+      required: [targets]
+      properties:
+        targets:
+          type: array
+          minItems: 1
+          maxItems: 9
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/AllocationTarget'
+    AllocationTargetsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllocationTarget'
+    CreateProjectionRequest:
+      type: object
+      additionalProperties: false
+      required: [name, initialCapitalMinor, monthlyContributionMinor, currency, horizonYears, annualReturnBasisPoints, annualInflationBasisPoints, annualFeesBasisPoints]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        initialCapitalMinor:
+          type: integer
+          minimum: 0
+        monthlyContributionMinor:
+          type: integer
+          minimum: 0
+        currency:
+          $ref: '#/components/schemas/Currency'
+        horizonYears:
+          type: integer
+          minimum: 1
+          maximum: 60
+        annualReturnBasisPoints:
+          type: integer
+          minimum: -10000
+          maximum: 30000
+        annualInflationBasisPoints:
+          type: integer
+          minimum: -5000
+          maximum: 20000
+        annualFeesBasisPoints:
+          type: integer
+          minimum: 0
+          maximum: 10000
+    ProjectionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [id, name, currency, horizonYears, totalContributedMinor, projectedNominalCapitalMinor, projectedRealCapitalMinor, calculatedAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            currency:
+              $ref: '#/components/schemas/Currency'
+            horizonYears:
+              type: integer
+            totalContributedMinor:
+              type: integer
+            projectedNominalCapitalMinor:
+              type: integer
+            projectedRealCapitalMinor:
+              type: integer
+            calculatedAt:
+              type: string
+              format: date-time
+    DecisionStatus:
+      type: string
+      enum: [DRAFT, PLANNED, EXECUTED, CANCELLED, REVIEWED]
+    CreateDecisionRequest:
+      type: object
+      additionalProperties: false
+      required: [title, rationale]
+      properties:
+        assetId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        intendedAction:
+          type: string
+          enum: [NONE, WATCH, BUY, SELL, REBALANCE, SUSPEND_BUYS]
+        reviewAt:
+          type: string
+          format: date-time
+        sources:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            additionalProperties: false
+            required: [url, title]
+            properties:
+              url:
+                type: string
+                format: uri
+              title:
+                type: string
+                maxLength: 300
+    Decision:
+      type: object
+      required: [id, portfolioId, title, rationale, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        portfolioId:
+          type: string
+          format: uuid
+        assetId:
+          type: [string, 'null']
+          format: uuid
+        title:
+          type: string
+        rationale:
+          type: string
+        intendedAction:
+          type: [string, 'null']
+        status:
+          $ref: '#/components/schemas/DecisionStatus'
+        reviewAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    DecisionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Decision'
+    DecisionListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Decision'
+        page:
+          $ref: '#/components/schemas/PageInfo'
