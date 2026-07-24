@@ -8,6 +8,7 @@ export type DemoAccount = Readonly<{
   institutionName: string;
   amount: number;
   monthlyContribution: number;
+  annualReturnPercent?: number;
 }>;
 
 function notifyAccountsChanged(): void {
