@@ -1,6 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import {
+  Banknote,
+  Coins,
+  Landmark,
+  LayoutDashboard,
+  ListChecks,
+  PiggyBank,
+  PieChart,
+  Plus,
+  Settings,
+  TrendingUp,
+  WalletCards,
+} from "lucide-react";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import {
   DEMO_ACCOUNTS_CHANGED_EVENT,
@@ -16,6 +29,13 @@ const euro = new Intl.NumberFormat("fr-FR", {
   style: "currency",
   currency: "EUR",
   maximumFractionDigits: 0,
+});
+
+const preciseEuro = new Intl.NumberFormat("fr-FR", {
+  style: "currency",
+  currency: "EUR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
 
 const compactEuro = new Intl.NumberFormat("fr-FR", {
@@ -39,7 +59,9 @@ const defaultSettings: DashboardSettings = {
   expectedReturnPercent: 6,
 };
 
-const denominations = [500, 200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01] as const;
+const banknotes = [500, 200, 100, 50, 20, 10, 5] as const;
+const coins = [2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01] as const;
+const denominations = [...banknotes, ...coins] as const;
 
 function subscribe(onStoreChange: () => void): () => void {
   window.addEventListener("storage", onStoreChange);
@@ -88,6 +110,10 @@ function futureValue(initial: number, monthly: number, annualRatePercent: number
   return initial * ((1 + monthlyRate) ** months) + monthly * ((((1 + monthlyRate) ** months) - 1) / monthlyRate);
 }
 
+function denominationLabel(denomination: number): string {
+  return denomination >= 1 ? `${denomination} €` : `${Math.round(denomination * 100)} c`;
+}
+
 export function FinancialDashboard() {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const parsed = useMemo(() => safeParse<{ accounts: string; settings: string; cash: string }>(snapshot, {
@@ -102,7 +128,9 @@ export function FinancialDashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [cashOpen, setCashOpen] = useState(false);
 
-  const cashTotal = denominations.reduce((sum, denomination) => sum + denomination * (cashCounts[String(denomination)] ?? 0), 0);
+  const banknotesTotal = banknotes.reduce((sum, denomination) => sum + denomination * (cashCounts[String(denomination)] ?? 0), 0);
+  const coinsTotal = coins.reduce((sum, denomination) => sum + denomination * (cashCounts[String(denomination)] ?? 0), 0);
+  const cashTotal = banknotesTotal + coinsTotal;
   const accountTotal = accounts.reduce((sum, account) => sum + account.amount, 0);
   const netWorth = accountTotal + cashTotal;
   const monthlyContribution = accounts.reduce((sum, account) => sum + account.monthlyContribution, 0);
@@ -128,7 +156,7 @@ export function FinancialDashboard() {
     accounts.length === 0 ? "Ajouter ton premier compte pour commencer le suivi." : null,
     savingsBalance < settings.emergencyTarget ? `Compléter l’épargne de sécurité : ${euro.format(Math.max(0, settings.emergencyTarget - savingsBalance))} restant.` : null,
     monthlyContribution === 0 ? "Renseigner les versements mensuels pour obtenir une projection fiable." : null,
-    cashTotal === 0 ? "Compter les espèces détenues pour avoir un patrimoine complet." : null,
+    cashTotal === 0 ? "Renseigner les billets et pièces conservés chez toi." : null,
   ].filter((task): task is string => task !== null);
 
   function saveSettings(next: DashboardSettings): void {
@@ -142,6 +170,11 @@ export function FinancialDashboard() {
     window.dispatchEvent(new Event(LOCAL_EVENT));
   }
 
+  function openCashCounter(): void {
+    setCashOpen(true);
+    window.requestAnimationFrame(() => document.getElementById("cash-counter")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Navigation principale">
@@ -150,12 +183,13 @@ export function FinancialDashboard() {
           <span>Patrimoine</span>
         </Link>
         <nav>
-          <ul className="nav-list">
-            <li><a aria-current="page" href="#overview">Vue d’ensemble</a></li>
-            <li><a href="#accounts">Comptes</a></li>
-            <li><a href="#allocation">Répartition</a></li>
-            <li><a href="#projection">Projection</a></li>
-            <li><a href="#actions">À faire</a></li>
+          <ul className="nav-list icon-nav-list">
+            <li><a aria-current="page" href="#overview"><LayoutDashboard aria-hidden="true" size={19} /><span>Vue d’ensemble</span></a></li>
+            <li><a href="#accounts"><WalletCards aria-hidden="true" size={19} /><span>Comptes</span></a></li>
+            <li><a href="#cash-account"><Banknote aria-hidden="true" size={19} /><span>Compte espèces</span></a></li>
+            <li><a href="#allocation"><PieChart aria-hidden="true" size={19} /><span>Répartition</span></a></li>
+            <li><a href="#projection"><TrendingUp aria-hidden="true" size={19} /><span>Projection</span></a></li>
+            <li><a href="#actions"><ListChecks aria-hidden="true" size={19} /><span>À faire</span></a></li>
           </ul>
         </nav>
         <div className="sidebar-note">
@@ -168,8 +202,9 @@ export function FinancialDashboard() {
         <header className="topbar">
           <div><p className="eyebrow">Tableau de bord</p><h1>Mes finances</h1></div>
           <div className="topbar-actions">
-            <button className="secondary-link" type="button" onClick={() => setSettingsOpen((open) => !open)} aria-expanded={settingsOpen} aria-controls="dashboard-settings">Réglages</button>
-            <Link className="primary-button" href="/accounts/new">Ajouter un compte</Link>
+            <button className="secondary-link icon-button" type="button" onClick={() => setSettingsOpen((open) => !open)} aria-expanded={settingsOpen} aria-controls="dashboard-settings"><Settings aria-hidden="true" size={18} />Réglages</button>
+            <button className="cash-header-button" type="button" onClick={openCashCounter}><Banknote aria-hidden="true" size={19} />Mes espèces</button>
+            <Link className="primary-button icon-button" href="/accounts/new"><Plus aria-hidden="true" size={18} />Ajouter un compte</Link>
           </div>
         </header>
 
@@ -185,40 +220,80 @@ export function FinancialDashboard() {
         ) : null}
 
         <section id="overview" aria-labelledby="overview-title" className="hero-card finance-hero">
-          <div><p className="eyebrow">Patrimoine net suivi</p><h2 id="overview-title">{euro.format(netWorth)}</h2><p className="hero-copy">Comptes et espèces réunis dans une vue unique.</p></div>
+          <div><p className="eyebrow">Patrimoine net suivi</p><h2 id="overview-title">{euro.format(netWorth)}</h2><p className="hero-copy">Comptes bancaires, investissements et espèces réunis dans une vue unique.</p></div>
           <div className="hero-stat"><strong>{euro.format(monthlyContribution)}</strong><span>épargnés ou investis chaque mois</span></div>
         </section>
 
-        <section className="metrics-grid" aria-label="Indicateurs principaux">
-          <article className="metric-card"><span className="eyebrow">Comptes</span><strong>{accounts.length}</strong><p>{accounts.length === 0 ? "Aucun compte renseigné" : "enveloppes suivies"}</p></article>
-          <article className="metric-card"><span className="eyebrow">Épargne de sécurité</span><strong>{goalPercent} %</strong><p>{euro.format(savingsBalance)} sur {euro.format(settings.emergencyTarget)}</p></article>
-          <article className="metric-card"><span className="eyebrow">Espèces</span><strong>{euro.format(cashTotal)}</strong><button className="text-button" type="button" onClick={() => setCashOpen((open) => !open)} aria-expanded={cashOpen} aria-controls="cash-counter">{cashOpen ? "Fermer le compteur" : "Compter billets et pièces"}</button></article>
+        <section id="cash-account" className="cash-action-card" aria-labelledby="cash-action-title">
+          <div className="cash-action-icon" aria-hidden="true"><Banknote size={36} strokeWidth={1.8} /></div>
+          <div className="cash-action-copy">
+            <p className="eyebrow">Compte espèces</p>
+            <h2 id="cash-action-title">Billets et pièces détenus chez toi</h2>
+            <p>Indique combien tu possèdes de chaque coupure. Le total sera ajouté automatiquement à ton patrimoine général.</p>
+          </div>
+          <div className="cash-action-summary" aria-label={`Total espèces ${preciseEuro.format(cashTotal)}`}>
+            <strong>{preciseEuro.format(cashTotal)}</strong>
+            <span>{cashTotal > 0 ? "déjà inclus dans le patrimoine" : "aucune espèce renseignée"}</span>
+          </div>
+          <button className="cash-primary-button" type="button" onClick={() => setCashOpen((open) => !open)} aria-expanded={cashOpen} aria-controls="cash-counter">
+            {cashOpen ? "Masquer le compteur" : "Ajouter mes billets et pièces"}
+          </button>
         </section>
 
         {cashOpen ? (
-          <section id="cash-counter" className="section-card" aria-labelledby="cash-title">
-            <div className="section-heading"><div><p className="eyebrow">Espèces</p><h2 id="cash-title">Compteur de billets et pièces</h2></div><strong className="cash-total">{euro.format(cashTotal)}</strong></div>
-            <div className="cash-grid">
-              {denominations.map((denomination) => (
-                <label className="cash-field" key={denomination}>
-                  <span>{denomination >= 1 ? `${denomination} €` : `${Math.round(denomination * 100)} c`}</span>
-                  <input type="number" inputMode="numeric" min="0" step="1" value={cashCounts[String(denomination)] ?? 0} onChange={(event) => updateCash(denomination, Number(event.target.value) || 0)} />
-                  <strong>{euro.format(denomination * (cashCounts[String(denomination)] ?? 0))}</strong>
-                </label>
-              ))}
+          <section id="cash-counter" className="section-card cash-counter-card" aria-labelledby="cash-title">
+            <div className="section-heading cash-counter-heading">
+              <div><p className="eyebrow">Inventaire d’espèces</p><h2 id="cash-title">Compteur de billets et pièces</h2></div>
+              <div className="cash-counter-totals">
+                <span><Banknote aria-hidden="true" size={18} />Billets <strong>{preciseEuro.format(banknotesTotal)}</strong></span>
+                <span><Coins aria-hidden="true" size={18} />Pièces <strong>{preciseEuro.format(coinsTotal)}</strong></span>
+                <span className="cash-grand-total">Total <strong>{preciseEuro.format(cashTotal)}</strong></span>
+              </div>
+            </div>
+            <div className="cash-groups">
+              <section aria-labelledby="banknotes-title">
+                <h3 id="banknotes-title"><Banknote aria-hidden="true" size={21} />Billets</h3>
+                <div className="cash-grid">
+                  {banknotes.map((denomination) => (
+                    <label className="cash-field" key={denomination}>
+                      <span>{denominationLabel(denomination)}</span>
+                      <input aria-label={`Nombre de billets de ${denominationLabel(denomination)}`} type="number" inputMode="numeric" min="0" step="1" value={cashCounts[String(denomination)] ?? 0} onChange={(event) => updateCash(denomination, Number(event.target.value) || 0)} />
+                      <strong>{preciseEuro.format(denomination * (cashCounts[String(denomination)] ?? 0))}</strong>
+                    </label>
+                  ))}
+                </div>
+              </section>
+              <section aria-labelledby="coins-title">
+                <h3 id="coins-title"><Coins aria-hidden="true" size={21} />Pièces</h3>
+                <div className="cash-grid">
+                  {coins.map((denomination) => (
+                    <label className="cash-field" key={denomination}>
+                      <span>{denominationLabel(denomination)}</span>
+                      <input aria-label={`Nombre de pièces de ${denominationLabel(denomination)}`} type="number" inputMode="numeric" min="0" step="1" value={cashCounts[String(denomination)] ?? 0} onChange={(event) => updateCash(denomination, Number(event.target.value) || 0)} />
+                      <strong>{preciseEuro.format(denomination * (cashCounts[String(denomination)] ?? 0))}</strong>
+                    </label>
+                  ))}
+                </div>
+              </section>
             </div>
           </section>
         ) : null}
 
+        <section className="metrics-grid" aria-label="Indicateurs principaux">
+          <article className="metric-card metric-with-icon"><span className="metric-icon"><Landmark aria-hidden="true" size={22} /></span><div><span className="eyebrow">Comptes</span><strong>{accounts.length}</strong><p>{accounts.length === 0 ? "Aucun compte renseigné" : "enveloppes suivies"}</p></div></article>
+          <article className="metric-card metric-with-icon"><span className="metric-icon"><PiggyBank aria-hidden="true" size={22} /></span><div><span className="eyebrow">Épargne de sécurité</span><strong>{goalPercent} %</strong><p>{euro.format(savingsBalance)} sur {euro.format(settings.emergencyTarget)}</p></div></article>
+          <article className="metric-card metric-with-icon"><span className="metric-icon metric-icon-cash"><Banknote aria-hidden="true" size={22} /></span><div><span className="eyebrow">Espèces incluses</span><strong>{preciseEuro.format(cashTotal)}</strong><p>Billets {preciseEuro.format(banknotesTotal)} · Pièces {preciseEuro.format(coinsTotal)}</p></div></article>
+        </section>
+
         <section id="accounts" aria-labelledby="accounts-title" className="section-card">
-          <div className="section-heading"><div><p className="eyebrow">Comptes</p><h2 id="accounts-title">Mes enveloppes</h2></div><Link className="secondary-link" href="/accounts/new">Ajouter</Link></div>
+          <div className="section-heading"><div><p className="eyebrow">Comptes</p><h2 id="accounts-title">Mes enveloppes</h2></div><Link className="secondary-link icon-button" href="/accounts/new"><Plus aria-hidden="true" size={18} />Ajouter</Link></div>
           {accounts.length === 0 ? (
-            <div className="empty-state"><h3>Commence par ajouter un compte</h3><p>Compte courant, Livret A, PEA, CTO, PER, crypto ou autre actif.</p><Link className="primary-button" href="/accounts/new">Ajouter mon premier compte</Link></div>
+            <div className="empty-state"><h3>Commence par ajouter un compte</h3><p>Compte courant, Livret A, PEA, CTO, PER, crypto ou autre actif.</p><Link className="primary-button icon-button" href="/accounts/new"><Plus aria-hidden="true" size={18} />Ajouter mon premier compte</Link></div>
           ) : (
             <div className="account-grid">
               {accounts.map((account) => (
                 <Link className="account-card account-card-link" href={`/accounts/${account.id}`} key={account.id}>
-                  <div className="account-card-header"><span className="account-icon" aria-hidden="true">{account.name.slice(0, 1)}</span><span className="status-pill status-active">Actif</span></div>
+                  <div className="account-card-header"><span className="account-icon" aria-hidden="true"><WalletCards size={18} /></span><span className="status-pill status-active">Actif</span></div>
                   <h3>{account.name}</h3>
                   <p>{account.institutionName || normaliseType(account)}</p>
                   <dl><div><dt>Valeur</dt><dd>{euro.format(account.amount)}</dd></div><div><dt>Mensuel</dt><dd>{euro.format(account.monthlyContribution)}</dd></div></dl>
@@ -231,7 +306,7 @@ export function FinancialDashboard() {
         <div className="two-column-grid">
           <section id="allocation" aria-labelledby="allocation-title" className="section-card">
             <div className="section-heading"><div><p className="eyebrow">Répartition actuelle</p><h2 id="allocation-title">Allocation</h2></div></div>
-            {allocation.length === 0 ? <p className="muted-copy">Ajoute des comptes pour afficher la répartition.</p> : (
+            {allocation.length === 0 ? <p className="muted-copy">Ajoute des comptes ou des espèces pour afficher la répartition.</p> : (
               <>
                 <div className="allocation-bar" role="img" aria-label={allocation.map((item) => `${item.label} ${Math.round(item.percent)} pour cent`).join(", ")}>
                   {allocation.map((item, index) => <span className={`allocation-segment allocation-${index % 5}`} key={item.label} style={{ width: `${item.percent}%` }} />)}
