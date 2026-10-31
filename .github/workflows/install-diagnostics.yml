@@ -1,0 +1,33 @@
+name: Diagnose npm resolver failure
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  install-matrix:
+    if: github.event.pull_request.head.ref == 'diagnostic/npm-resolver-2026-10'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        resolver: [legacy-peers, shallow-tree, omit-optionals]
+    name: Diagnose ${{ matrix.resolver }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install using isolated resolver variation
+        run: |
+          case "${{ matrix.resolver }}" in
+            legacy-peers) npm install --no-audit --no-fund --legacy-peer-deps ;;
+            shallow-tree) npm install --no-audit --no-fund --install-strategy=shallow ;;
+            omit-optionals) npm install --no-audit --no-fund --omit=optional ;;
+          esac
+      - name: Validate actual project
+        run: npm run verify
