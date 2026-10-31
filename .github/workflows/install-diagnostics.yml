@@ -31,3 +31,7 @@ jobs:
           esac
       - name: Validate actual project
         run: npm run verify
+      - name: Emit validated lockfile for code review
+        if: matrix.resolver == 'legacy-peers'
+        run: |
+          node -e "const fs=require('fs'); console.log('PATRIMOINE_LOCK_BEGIN'); process.stdout.write(fs.readFileSync('package-lock.json','utf8')); console.log('PATRIMOINE_LOCK_END')"
